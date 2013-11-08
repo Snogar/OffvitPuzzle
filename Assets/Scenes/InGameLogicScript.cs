@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -99,7 +99,7 @@ public class InGameLogicScript : MonoBehaviour {
 	
 	private void TileClicked(TileScript tile) {
 		//tile clicked
-		Debug.Log (tile.Row + " " + tile.Col + " type " + tile.Status.Type + " color " + tile.Status.Color + " countToDestroy " + tile.Status.CountToDestroyCurrent);
+		Debug.Log (tile.Row + " " + tile.Col + " type " + tile.Status.Type + " color " + tile.Status.Color + " countToDestroy " + tile.Status.CountToDestroy);
 		if(mClickedTile == null) {
 			//first tile clicked
 			mClickedTile = tile;
@@ -197,8 +197,8 @@ public class InGameLogicScript : MonoBehaviour {
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				if(tilesBlownUp[i,j]) {
-					mTiles[i,j].Status.CountToDestroyCurrent--;
-					if(mTiles[i,j].Status.CountToDestroyCurrent <= 0) {
+					mTiles[i,j].Status.CountToDestroy--;
+					if(mTiles[i,j].Status.CountToDestroy <= 0) {
 						//Tile Destroyed :: give exp, money and special effects
 						tilesDestroyed[i,j] = true;
 					}
@@ -247,7 +247,7 @@ public class InGameLogicScript : MonoBehaviour {
 	}
 	
 	private void EnemyAction() {
-		int i, j, k;
+		int i, j;
 		
 		mIsEnemyActionDone = true;
 		if(!mIsBlownThisTurn) return;
@@ -274,7 +274,7 @@ public class InGameLogicScript : MonoBehaviour {
 	
 	private void EnemyMove(int row, int col) {
 		int k, moveToRow = -1;
-		for(k=1;k<=mTiles[row,col].Status.MovementSpeedCurrent;k++) {
+		for(k=1;k<=mTiles[row,col].Status.MovementSpeed;k++) {
 			if(row+k < MAX_ROW_COUNT && TileTypeManager.Instance.IsEnemyRemovableTile(mTiles[row+k, col].Status.Type)) {
 				moveToRow = row+k;
 			}
@@ -290,11 +290,15 @@ public class InGameLogicScript : MonoBehaviour {
 	}
 	
 	private void EnemyAttack(int row, int col) {
-		//TODO : enemy attack speed, enemy wizard attacks skill gauge
+		//TODO : enemy wizard attacks skill gauge
 		
-		mTiles[row,col].IsBlowable = false;
-		UserManager.Instance.decreaseHP(TileTypeManager.Instance.GetEnemyDamage(mTiles[row, col].Status.Type));
-		StartCoroutine(InGameAnimationManager.Instance.EnemyAttackActionStart(mTiles[row, col]));
+		mTiles[row,col].Status.TurnLeftAttack--;
+		if(mTiles[row,col].Status.TurnLeftAttack <= 0) {
+			mTiles[row,col].Status.AttackTurnReset();
+			mTiles[row,col].IsBlowable = false;
+			UserManager.Instance.decreaseHP(TileTypeManager.Instance.GetEnemyDamage(mTiles[row, col].Status.Type));
+			StartCoroutine(InGameAnimationManager.Instance.EnemyAttackActionStart(mTiles[row, col]));
+		}
 	}
 	
 	private void TurnEnd() {

@@ -88,20 +88,18 @@ public class TileScript : MonoBehaviour {
 }
 
 public class TileStatus {
-	private int mCountToDestroyMax, mMovementSpeedMax, mAttackSpeedMax;
-	private int mCountToDestroyCurrent, mMovementSpeedCurrent, mAttackSpeedCurrent;
+	private int mCountToDestroy, mMovementSpeed, mAttackSpeed;
+	private int mTurnLeftAttack;
 	private TileTypeManager.TileType mType;
 	private TileTypeManager.TileColor mColor;
 	
 	public TileStatus() {
 		mType = TypeGenerate();
 		mColor = ColorGenerate();
-		mCountToDestroyMax = TileTypeManager.Instance.GetCountToDestroy(mType);
-		mMovementSpeedMax = TileTypeManager.Instance.GetMovementSpeed(mType);
-		mAttackSpeedMax = TileTypeManager.Instance.GetAttackSpeed(mType);
-		mCountToDestroyCurrent = mCountToDestroyMax;
-		mMovementSpeedCurrent = mMovementSpeedMax;
-		mAttackSpeedCurrent = mAttackSpeedMax;
+		mCountToDestroy = TileTypeManager.Instance.GetCountToDestroy(mType);
+		mMovementSpeed = TileTypeManager.Instance.GetMovementSpeed(mType);
+		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
+		mTurnLeftAttack = 1;
 	}
 
 	public TileTypeManager.TileType Type {
@@ -114,31 +112,24 @@ public class TileStatus {
 		set { mColor = value; }
 	}
 	
-	public int CountToDestroyMax {
-		get { return mCountToDestroyMax; }
+	public int CountToDestroy {
+		get { return mCountToDestroy; }
+		set { mCountToDestroy = value; }
 	}
 	
-	public int MovementSpeedMax {
-		get { return mMovementSpeedMax; }
+	public int MovementSpeed {
+		get { return mMovementSpeed; }
+		set { mMovementSpeed = value; }
 	}
 	
-	public int AttackSpeedMax {
-		get { return mAttackSpeedMax; }
+	public int AttackSpeed {
+		get { return mAttackSpeed; }
+		//set { mAttackSpeed = value; }
 	}
 	
-	public int CountToDestroyCurrent {
-		get { return mCountToDestroyCurrent; }
-		set { mCountToDestroyCurrent = value; }
-	}
-	
-	public int MovementSpeedCurrent {
-		get { return mMovementSpeedCurrent; }
-		set { mMovementSpeedCurrent = value; }
-	}
-	
-	public int AttackSpeedCurrent {
-		get { return mAttackSpeedCurrent; }
-		set { mAttackSpeedCurrent = value; }
+	public int TurnLeftAttack {
+		get { return mTurnLeftAttack; }
+		set { mTurnLeftAttack = value; }
 	}
 	
 	private TileTypeManager.TileType TypeGenerate() {
@@ -153,5 +144,9 @@ public class TileStatus {
 	}
 	private TileTypeManager.TileColor ColorGenerate() {
 		return (TileTypeManager.TileColor)Random.Range(0, (int)(TileTypeManager.TileColor.MAX_COUNT));
+	}
+	
+	public void AttackTurnReset() {
+		mTurnLeftAttack = mAttackSpeed;
 	}
 }
