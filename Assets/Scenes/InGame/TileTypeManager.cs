@@ -6,7 +6,7 @@ public class TileTypeManager {
 	public enum TileColor {
 		BLUE,
 		GREEN,
-		YELLOW,
+		WHITE,
 		PINK,
 		PURPLE,
 		MAX_COUNT
@@ -31,11 +31,11 @@ public class TileTypeManager {
 	private string[,] tileSpriteName = {
 		//TODO: HEAL AND CROSS
 		//NORMAL	 	 HEAL	   		CROSS	  		SPECIAL			ENEMY_WARR 			ENEMY_ARCH 		 ENEMY_GIANT       ENEMY_ASSA        ENEMY_WIZ
-		{"Blue",	"Blue_Buffer",	"Blue_Assassin",	"Blue_Extra",   "Blue_Warrior",		"Blue_Archer",   "Blue_Giant",   "Blue_Assassin",   "Blue_Wizard"},
-		{"Green",	"Green_Buffer",	"Green_Assassin",	"Green_Extra",	"Green_Warrior",	"Green_Archer",  "Green_Giant",  "Green_Assassin",  "Green_Wizard"},
-		{"Yellow",	"Yellow_Buffer","Yellow_Assassin",	"Yellow_Extra",	"Yellow_Warrior",	"Yellow_Archer", "Yellow_Giant", "Yellow_Assassin", "Yellow_Wizard"},
-		{"Pink",	"Pink_Buffer", 	"Pink_Assassin",	"Pink_Extra",   "Pink_Warrior",		"Pink_Archer",   "Pink_Giant",   "Pink_Assassin",   "Pink_Wizard"},
-		{"Purple",	"Purple_Buffer","Purple_Assassin",	"Purple_Extra",	"Purple_Warrior",	"Purple_Archer", "Purple_Giant", "Purple_Assassin", "Purple_Wizard"},
+		{"blue",	"blue_buffer",	"blue_assassin",	"blue_extra",   "blue_warrior",		"blue_archer",   "blue_giant",   "blue_assassin",   "blue_wizard"},
+		{"green",	"green_buffer",	"green_assassin",	"green_extra",	"green_warrior",	"green_archer",  "green_giant",  "green_assassin",  "green_wizard"},
+		{"white",	"white_buffer", "white_assassin",	"white_extra",	"white_warrior",	"white_archer",  "white_giant",  "white_assassin",  "white_wizard"},
+		{"pink",	"pink_buffer", 	"pink_assassin",	"pink_extra",   "pink_warrior",		"pink_archer",   "pink_giant",   "pink_assassin",   "pink_wizard"},
+		{"purple",	"purple_buffer","purple_assassin",	"purple_extra",	"purple_warrior",	"purple_archer", "purple_giant", "purple_assassin", "purple_wizard"},
 	};
 	
 	private static TileTypeManager instance;

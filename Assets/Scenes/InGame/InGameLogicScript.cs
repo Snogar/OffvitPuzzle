@@ -265,7 +265,7 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 				else {
 					if(i != MAX_ROW_COUNT-1) EnemyMove(i,j);
-					else if(i == MAX_ROW_COUNT - 1) EnemyAttack(i,j);
+					else EnemyAttack(i,j);
 				}
 				
 			}
