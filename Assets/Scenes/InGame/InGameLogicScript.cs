@@ -2,6 +2,41 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public class TilesBlownUp{
+	public bool Vertical;
+	public bool Horizontal;
+	public enum Kind{
+		Trash,
+		Five,
+		L,
+		Four
+	};
+	
+	public Kind kind;
+	public bool isBlownUp(){
+		return Vertical || Horizontal;
+	}
+	public bool itsMe(Kind kk){
+		if(kind == kk || kind == Kind.Trash){
+			return true;
+		}
+		else return false;
+	}
+	public static void Construct(TilesBlownUp[,] tilesBlownUp){
+		int i,j;
+		int n,m;
+		
+		n = tilesBlownUp.GetLength(0);
+		m = tilesBlownUp.GetLength(1);
+		
+		for(i=0;i<n;i++){
+			for(j=0;j<m;j++){
+				tilesBlownUp[i,j] = new TilesBlownUp();
+			}
+		}
+	}
+}
+
 public class InGameLogicScript : MonoBehaviour {
 	private const int MAX_ROW_COUNT = 8;
 	private const int MAX_COL_COUNT = 8;
@@ -35,7 +70,9 @@ public class InGameLogicScript : MonoBehaviour {
 			}
 		}
 		
-		bool[,] tilesBlownUpTemp = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
+		TilesBlownUp[,] tilesBlownUpTemp = new TilesBlownUp[MAX_ROW_COUNT, MAX_COL_COUNT];
+		TilesBlownUp.Construct(tilesBlownUpTemp);
+		
 		while(CheckBlowUpTiles(tilesBlownUpTemp)) {
 			for(i=0;i<MAX_ROW_COUNT;i++) {
 				for(j=0;j<MAX_COL_COUNT;j++) {
@@ -149,14 +186,13 @@ public class InGameLogicScript : MonoBehaviour {
 		StartCoroutine(InGameAnimationManager.Instance.MoveAnimation(destinationTile, destinationTile.GetTileVector()));
 	}
 
-	private bool CheckBlowUpTiles(bool[,] tilesBlownUp) {
-		int i, j, k;
+	private bool CheckBlowUpTiles(TilesBlownUp [,] tilesBlownUp) {
+		int i, j;
 		bool isBlown = false;
-		
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				if(!mTiles[i,j].IsBlowable) continue;
-				
+				/*
 				//Right
 				for(k=1;k<MAX_COL_COUNT-j;k++) {
 					if(!mTiles[i,j+k].IsBlowable || mTiles[i,j].Status.Color != mTiles[i,j+k].Status.Color) break;
@@ -181,6 +217,205 @@ public class InGameLogicScript : MonoBehaviour {
 						if(!mTiles[i+k,j].IsBlowable || mTiles[i,j].Status.Color != mTiles[i+k,j].Status.Color) break;
 						tilesBlownUp[i+k, j] = true;
 					}
+				}*/
+				if(i != 0 && i != MAX_ROW_COUNT-1){
+					if(mTiles[i,j].IsBlowable && mTiles[i-1,j].IsBlowable && mTiles[i+1,j].IsBlowable){
+						if(mTiles[i-1,j].Status.Color == mTiles[i,j].Status.Color &&
+							mTiles[i+1,j].Status.Color == mTiles[i,j].Status.Color){
+							tilesBlownUp[i,j].Vertical = true;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Trash;
+							tilesBlownUp[i-1,j].Vertical = true;
+							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Trash;
+							tilesBlownUp[i+1,j].Vertical = true;
+							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.Trash;
+							isBlown = true;
+						}
+					}
+				}
+				if(j != 0 && j != MAX_COL_COUNT-1){
+					if(mTiles[i,j].IsBlowable && mTiles[i,j-1].IsBlowable && mTiles[i,j+1].IsBlowable){
+						if(mTiles[i,j-1].Status.Color == mTiles[i,j].Status.Color &&
+							mTiles[i,j+1].Status.Color == mTiles[i,j].Status.Color){
+							tilesBlownUp[i,j].Horizontal = true;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Trash;
+							tilesBlownUp[i,j-1].Horizontal = true;
+							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Trash;
+							tilesBlownUp[i,j+1].Horizontal = true;
+							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.Trash;
+							isBlown = true;
+						}
+					}
+				}
+			}
+		}
+		
+		//five 
+		for(i=0;i<MAX_ROW_COUNT;i++) {
+			for(j=0;j<MAX_COL_COUNT;j++) {
+				// Vertical
+				if(i >= 2 && i < MAX_ROW_COUNT-2){
+					if(tilesBlownUp[i-2,j].isBlownUp() && 
+						tilesBlownUp[i-1,j].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i+1,j].isBlownUp()&& 
+						tilesBlownUp[i+2,j].isBlownUp()){
+						
+						tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i+2,j].kind = TilesBlownUp.Kind.Five;
+					}
+				}
+				// Horizontal
+				if(j >= 2 && j < MAX_COL_COUNT-2){
+					if(tilesBlownUp[i,j-2].isBlownUp() && 
+						tilesBlownUp[i,j-1].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i,j+1].isBlownUp()&& 
+						tilesBlownUp[i,j+2].isBlownUp()){
+						
+						tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.Five;
+						tilesBlownUp[i,j+2].kind = TilesBlownUp.Kind.Five;
+					}
+				}
+			}
+		}
+		
+		//Giyeok
+		for(i=0;i<MAX_ROW_COUNT;i++){
+			for(j=0;j<MAX_COL_COUNT;j++){
+				// Giyeok and right rotation
+				//first Giyeok
+				if(j >= 2 && i < MAX_ROW_COUNT-2){
+					if(tilesBlownUp[i,j-2].isBlownUp() && 
+						tilesBlownUp[i,j-1].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i+1,j].isBlownUp()&& 
+						tilesBlownUp[i+2,j].isBlownUp()){
+						if(tilesBlownUp[i,j-2].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j-1].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i+1,j].itsMe (TilesBlownUp.Kind.L)&&
+							tilesBlownUp[i+2,j].itsMe (TilesBlownUp.Kind.L)){
+						
+							tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i+2,j].kind = TilesBlownUp.Kind.L;
+						}
+					}
+				}
+				//second Giyeok
+				if(j >= 2 && i >= 2){
+					if(tilesBlownUp[i,j-2].isBlownUp() && 
+						tilesBlownUp[i,j-1].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i-1,j].isBlownUp()&& 
+						tilesBlownUp[i-2,j].isBlownUp()){
+						
+						if(tilesBlownUp[i,j-2].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j-1].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.L)&&
+							tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.L)){
+						
+							tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.L;
+						}
+					}
+				}
+				// third Giyeok
+				if(j < MAX_COL_COUNT-2 && i >= 2){
+					if(tilesBlownUp[i,j+2].isBlownUp() && 
+						tilesBlownUp[i,j+1].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i-1,j].isBlownUp()&& 
+						tilesBlownUp[i-2,j].isBlownUp()){
+						
+						if(tilesBlownUp[i,j+2].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j+1].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.L)&&
+							tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.L)){
+						
+							tilesBlownUp[i,j+2].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.L;
+						}
+					}
+				}
+				//fourth Giyeok
+				if(j < MAX_COL_COUNT-2 && i < MAX_ROW_COUNT-2){
+					if(tilesBlownUp[i,j+2].isBlownUp() && 
+						tilesBlownUp[i,j+1].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i+1,j].isBlownUp()&& 
+						tilesBlownUp[i+2,j].isBlownUp()){
+						
+						if(tilesBlownUp[i,j+2].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j+1].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
+							tilesBlownUp[i+1,j].itsMe (TilesBlownUp.Kind.L)&&
+							tilesBlownUp[i+2,j].itsMe (TilesBlownUp.Kind.L)){
+						
+							tilesBlownUp[i,j+2].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.L;
+							tilesBlownUp[i+2,j].kind = TilesBlownUp.Kind.L;
+						}
+					}
+				}
+			}
+		}
+		//Four
+		for(i=0;i<MAX_ROW_COUNT;i++) {
+			for(j=0;j<MAX_COL_COUNT;j++) {
+				// Vertical
+				if(i >= 2 && i < MAX_ROW_COUNT-1){
+					if( tilesBlownUp[i-2,j].isBlownUp() && 
+						tilesBlownUp[i-1,j].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i+1,j].isBlownUp()){
+						if(tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.Four) &&
+							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.Four) &&
+							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.Four) &&
+							tilesBlownUp[i+1,j].itsMe (TilesBlownUp.Kind.Four)){
+							
+							tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.Four;
+							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Four;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Four;
+							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.Four;
+						}
+					}
+				}
+				// Horizontal
+				if(j >= 2 && j < MAX_COL_COUNT-1){
+					if( tilesBlownUp[i,j-2].isBlownUp() && 
+						tilesBlownUp[i,j-1].isBlownUp()&& 
+						tilesBlownUp[i,j].isBlownUp()&& 
+						tilesBlownUp[i,j+1].isBlownUp()){
+						if(tilesBlownUp[i,j-2].itsMe(TilesBlownUp.Kind.Four) &&
+							tilesBlownUp[i,j-1].itsMe(TilesBlownUp.Kind.Four) &&
+							tilesBlownUp[i,j].itsMe(TilesBlownUp.Kind.Four) &&
+							tilesBlownUp[i,j+1].itsMe(TilesBlownUp.Kind.Four)){
+							
+							tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.Four;
+							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Four;
+							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Four;
+							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.Four;
+						}
+					}
 				}
 			}
 		}
@@ -189,14 +424,18 @@ public class InGameLogicScript : MonoBehaviour {
 	
 	private bool BlowUpTiles() {
 		int i, j;
-		bool[,] tilesBlownUp = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
+		TilesBlownUp[,] tilesBlownUp = new TilesBlownUp[MAX_ROW_COUNT, MAX_COL_COUNT];
+		TilesBlownUp.Construct(tilesBlownUp);
+		
 		bool[,] tilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
 		
 		if(!CheckBlowUpTiles(tilesBlownUp)) return false;
 		
+		// delete 
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
-				if(tilesBlownUp[i,j]) {
+				// add
+				if(tilesBlownUp[i,j].isBlownUp()) {
 					mTiles[i,j].Status.CountToDestroy--;
 					if(mTiles[i,j].Status.CountToDestroy <= 0) {
 						//Tile Destroyed :: give exp, money and special effects
@@ -206,6 +445,7 @@ public class InGameLogicScript : MonoBehaviour {
 			}
 		}
 			
+		
 		int row;
 		for(j=0;j<MAX_COL_COUNT;j++) {
 			Queue<int> q = new Queue<int>();
