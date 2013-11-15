@@ -47,6 +47,7 @@ public class InGameLogicScript : MonoBehaviour {
 	private TileScript mClickedTile;
 	private TileScript[] mLastSwappedTiles = new TileScript[2];
 	private int mTurn;
+	private int mMovingCount;
 	
 	private static InGameLogicScript instance;
 	public static InGameLogicScript Instance {
@@ -86,6 +87,7 @@ public class InGameLogicScript : MonoBehaviour {
 		mIsEnemyActionDone = false;
 		mIsBlownThisTurn = false;
 		mTurn = 0;
+		mMovingCount = 0;
 		
 		InGameUIManager.Instance.UpdateHP(UserManager.Instance.HP);
 		InGameUIManager.Instance.UpdateTurn(mTurn);
@@ -173,6 +175,10 @@ public class InGameLogicScript : MonoBehaviour {
 	}
 	
 	private void MoveTile(TileScript moveTile, TileScript destinationTile) {
+		
+		moveTile.Status.MoveTime = mMovingCount;
+		mMovingCount ++;
+		Debug.Log ("Moving Count = " + mMovingCount.ToString());
 		destinationTile.IsBlowable = false;
 		destinationTile.SetPosition(moveTile.GetTileVector());
 		destinationTile.SetTile(moveTile.Status);
@@ -180,6 +186,10 @@ public class InGameLogicScript : MonoBehaviour {
 	}
 	
 	private void MoveTile(Vector3 startPosition, TileStatus tileStatus, TileScript destinationTile) {
+		
+		tileStatus.MoveTime = mMovingCount;
+		mMovingCount ++;
+		Debug.Log ("Moving Count = " + mMovingCount.ToString ());
 		destinationTile.IsBlowable = false;
 		destinationTile.SetPosition(startPosition);
 		destinationTile.SetTile(tileStatus);
@@ -252,13 +262,15 @@ public class InGameLogicScript : MonoBehaviour {
 		//five 
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
+				
+				TileTypeManager.TileColor nCol = mTiles[i,j].Status.Color;
+				
 				// Vertical
 				if(i >= 2 && i < MAX_ROW_COUNT-2){
-					if(tilesBlownUp[i-2,j].isBlownUp() && 
-						tilesBlownUp[i-1,j].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i+1,j].isBlownUp()&& 
-						tilesBlownUp[i+2,j].isBlownUp()){
+					if(mTiles[i-2,j].Status.Color == nCol &&
+						mTiles[i-1,j].Status.Color == nCol &&
+						mTiles[i+1,j].Status.Color == nCol &&
+						mTiles[i+2,j].Status.Color == nCol){
 						
 						tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.Five;
 						tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Five;
@@ -269,11 +281,10 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 				// Horizontal
 				if(j >= 2 && j < MAX_COL_COUNT-2){
-					if(tilesBlownUp[i,j-2].isBlownUp() && 
-						tilesBlownUp[i,j-1].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i,j+1].isBlownUp()&& 
-						tilesBlownUp[i,j+2].isBlownUp()){
+					if(mTiles[i,j-2].Status.Color == nCol &&
+						mTiles[i,j-1].Status.Color == nCol &&
+						mTiles[i,j+1].Status.Color == nCol &&
+						mTiles[i,j+2].Status.Color == nCol){
 						
 						tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.Five;
 						tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Five;
@@ -289,13 +300,14 @@ public class InGameLogicScript : MonoBehaviour {
 		for(i=0;i<MAX_ROW_COUNT;i++){
 			for(j=0;j<MAX_COL_COUNT;j++){
 				// Giyeok and right rotation
+				TileTypeManager.TileColor nCol = mTiles[i,j].Status.Color;
 				//first Giyeok
 				if(j >= 2 && i < MAX_ROW_COUNT-2){
-					if(tilesBlownUp[i,j-2].isBlownUp() && 
-						tilesBlownUp[i,j-1].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i+1,j].isBlownUp()&& 
-						tilesBlownUp[i+2,j].isBlownUp()){
+					if(mTiles[i,j-2].Status.Color == nCol &&
+						mTiles[i,j-1].Status.Color == nCol &&
+						mTiles[i+1,j].Status.Color == nCol &&
+						mTiles[i+2,j].Status.Color == nCol){
+						
 						if(tilesBlownUp[i,j-2].itsMe (TilesBlownUp.Kind.L) &&
 							tilesBlownUp[i,j-1].itsMe (TilesBlownUp.Kind.L) &&
 							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
@@ -312,11 +324,10 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 				//second Giyeok
 				if(j >= 2 && i >= 2){
-					if(tilesBlownUp[i,j-2].isBlownUp() && 
-						tilesBlownUp[i,j-1].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i-1,j].isBlownUp()&& 
-						tilesBlownUp[i-2,j].isBlownUp()){
+					if(mTiles[i,j-2].Status.Color == nCol &&
+						mTiles[i,j-1].Status.Color == nCol &&
+						mTiles[i-1,j].Status.Color == nCol &&
+						mTiles[i-2,j].Status.Color == nCol){
 						
 						if(tilesBlownUp[i,j-2].itsMe (TilesBlownUp.Kind.L) &&
 							tilesBlownUp[i,j-1].itsMe (TilesBlownUp.Kind.L) &&
@@ -334,11 +345,10 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 				// third Giyeok
 				if(j < MAX_COL_COUNT-2 && i >= 2){
-					if(tilesBlownUp[i,j+2].isBlownUp() && 
-						tilesBlownUp[i,j+1].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i-1,j].isBlownUp()&& 
-						tilesBlownUp[i-2,j].isBlownUp()){
+					if(mTiles[i,j+2].Status.Color == nCol &&
+						mTiles[i,j+1].Status.Color == nCol &&
+						mTiles[i-1,j].Status.Color == nCol &&
+						mTiles[i-2,j].Status.Color == nCol){
 						
 						if(tilesBlownUp[i,j+2].itsMe (TilesBlownUp.Kind.L) &&
 							tilesBlownUp[i,j+1].itsMe (TilesBlownUp.Kind.L) &&
@@ -356,11 +366,10 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 				//fourth Giyeok
 				if(j < MAX_COL_COUNT-2 && i < MAX_ROW_COUNT-2){
-					if(tilesBlownUp[i,j+2].isBlownUp() && 
-						tilesBlownUp[i,j+1].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i+1,j].isBlownUp()&& 
-						tilesBlownUp[i+2,j].isBlownUp()){
+					if(mTiles[i,j+2].Status.Color == nCol &&
+						mTiles[i,j+1].Status.Color == nCol &&
+						mTiles[i+1,j].Status.Color == nCol &&
+						mTiles[i+2,j].Status.Color == nCol){
 						
 						if(tilesBlownUp[i,j+2].itsMe (TilesBlownUp.Kind.L) &&
 							tilesBlownUp[i,j+1].itsMe (TilesBlownUp.Kind.L) &&
@@ -381,12 +390,15 @@ public class InGameLogicScript : MonoBehaviour {
 		//Four
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
+				
+				TileTypeManager.TileColor nCol = mTiles[i,j].Status.Color;
+				
 				// Vertical
 				if(i >= 2 && i < MAX_ROW_COUNT-1){
-					if( tilesBlownUp[i-2,j].isBlownUp() && 
-						tilesBlownUp[i-1,j].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i+1,j].isBlownUp()){
+					if(mTiles[i-2,j].Status.Color == nCol &&
+						mTiles[i-1,j].Status.Color == nCol &&
+						mTiles[i+1,j].Status.Color == nCol ){
+						
 						if(tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.Four) &&
 							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.Four) &&
 							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.Four) &&
@@ -401,10 +413,10 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 				// Horizontal
 				if(j >= 2 && j < MAX_COL_COUNT-1){
-					if( tilesBlownUp[i,j-2].isBlownUp() && 
-						tilesBlownUp[i,j-1].isBlownUp()&& 
-						tilesBlownUp[i,j].isBlownUp()&& 
-						tilesBlownUp[i,j+1].isBlownUp()){
+					if(mTiles[i,j-2].Status.Color == nCol &&
+						mTiles[i,j-1].Status.Color == nCol &&
+						mTiles[i,j+1].Status.Color == nCol ){
+						
 						if(tilesBlownUp[i,j-2].itsMe(TilesBlownUp.Kind.Four) &&
 							tilesBlownUp[i,j-1].itsMe(TilesBlownUp.Kind.Four) &&
 							tilesBlownUp[i,j].itsMe(TilesBlownUp.Kind.Four) &&
@@ -430,6 +442,8 @@ public class InGameLogicScript : MonoBehaviour {
 		bool[,] tilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
 		
 		if(!CheckBlowUpTiles(tilesBlownUp)) return false;
+		
+		
 		
 		// delete 
 		for(i=0;i<MAX_ROW_COUNT;i++) {
