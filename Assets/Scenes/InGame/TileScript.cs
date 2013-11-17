@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class TileScript : MonoBehaviour { 
 	private static tk2dSpriteCollectionData collection;
@@ -23,6 +22,24 @@ public class TileScript : MonoBehaviour {
 	
 	public static Vector3 GetTileVectorWithRowCol(int row, int col) {
 		return new Vector3(col*tileSize + tileSize/2, 960 - tileSize/2 - row*tileSize, 0);
+	}
+	
+	public static bool HasSameColor(TileScript[,] mTiles, int pivotRow, int pivotCol, int[][] IndexList)
+	{
+		int rowMax = mTiles.GetLength(0);
+		int colMax = mTiles.GetLength(1);
+		
+		TileTypeManager.TileColor pivotColor = mTiles[pivotRow, pivotCol].Status.Color;
+		
+		foreach(int[] index in IndexList){
+			int currentRow = pivotRow + index[0];
+			int currentCol = pivotCol + index[1];
+			
+			if(currentRow < 0 || currentRow >= rowMax || currentCol < 0 || currentCol >= colMax) return false;
+			
+			if(mTiles[currentRow, currentCol].Status.Color != pivotColor) return false;
+		}
+		return true;
 	}
 	
 	public Vector3 GetTileVector() {

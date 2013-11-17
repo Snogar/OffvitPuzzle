@@ -162,237 +162,162 @@ public class InGameLogicScript : MonoBehaviour {
 	}
 
 	private bool CheckBlowUpTiles(BlownUpStatus [,] blownUpStatus) {
-		int i, j;
+		int i, j, k;
 		bool isBlown = false;
+		int serialCount = 0;
+		TileTypeManager.TileColor startColor = mTiles[0,0].Status.Color;
+		//Right
 		for(i=0;i<MAX_ROW_COUNT;i++) {
+			serialCount = 0;
 			for(j=0;j<MAX_COL_COUNT;j++) {
-				if(!mTiles[i,j].IsBlowable) continue;
-				/*
-				//Right
-				for(k=1;k<MAX_COL_COUNT-j;k++) {
-					if(!mTiles[i,j+k].IsBlowable || mTiles[i,j].Status.Color != mTiles[i,j+k].Status.Color) break;
+				if(!mTiles[i,j].IsBlowable) {
+					serialCount = 0;
+					continue;
 				}
-				if(k >= BLOW_MINIMUM_COUNT) {
-					blownUpStatus[i, j] = true;
+				if(serialCount == 0 || startColor != mTiles[i,j].Status.Color) {
+					startColor = mTiles[i,j].Status.Color;
+					serialCount = 1;
+				}else{
+					serialCount++;	
+				}
+				if(serialCount == BLOW_MINIMUM_COUNT){
+					for(k = 1; k < BLOW_MINIMUM_COUNT; k++) {
+						blownUpStatus[i,j-k].Horizontal = true;
+					}
 					isBlown = true;
-					for(k=1;k<MAX_COL_COUNT-j;k++) {
-						if(!mTiles[i,j+k].IsBlowable || mTiles[i,j].Status.Color != mTiles[i,j+k].Status.Color) break;
-						blownUpStatus[i, j+k] = true;
+				}
+				if(serialCount >= BLOW_MINIMUM_COUNT){
+					blownUpStatus[i,j].Horizontal = true;
+				}
+			}
+		}
+		//Down
+		for(j=0;j<MAX_COL_COUNT;j++) {
+			serialCount = 0;
+			for(i=0;i<MAX_ROW_COUNT;i++) {
+				if(!mTiles[i,j].IsBlowable) {
+					serialCount = 0;
+					continue;
+				}
+				if(serialCount == 0 || startColor != mTiles[i,j].Status.Color) {
+					startColor = mTiles[i,j].Status.Color;
+					serialCount = 1;
+				}else{
+					serialCount++;	
+				}
+				if(serialCount == BLOW_MINIMUM_COUNT){
+					for(k = 1; k < BLOW_MINIMUM_COUNT; k++) {
+						blownUpStatus[i-k,j].Horizontal = true;
 					}
-				}
-				
-				//Down
-				for(k=1;k<MAX_ROW_COUNT-i;k++) {
-					if(!mTiles[i+k,j].IsBlowable || mTiles[i,j].Status.Color != mTiles[i+k,j].Status.Color) break;
-				}
-				if(k >= BLOW_MINIMUM_COUNT) {
-					blownUpStatus[i, j] = true;
 					isBlown = true;
-					for(k=1;k<MAX_ROW_COUNT-i;k++) {
-						if(!mTiles[i+k,j].IsBlowable || mTiles[i,j].Status.Color != mTiles[i+k,j].Status.Color) break;
-						blownUpStatus[i+k, j] = true;
-					}
-				}*/
-				if(i != 0 && i != MAX_ROW_COUNT-1){
-					if(mTiles[i,j].IsBlowable && mTiles[i-1,j].IsBlowable && mTiles[i+1,j].IsBlowable){
-						if(mTiles[i-1,j].Status.Color == mTiles[i,j].Status.Color &&
-							mTiles[i+1,j].Status.Color == mTiles[i,j].Status.Color){
-							blownUpStatus[i,j].Vertical = true;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.NONE;
-							blownUpStatus[i-1,j].Vertical = true;
-							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.NONE;
-							blownUpStatus[i+1,j].Vertical = true;
-							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.NONE;
-							isBlown = true;
-						}
-					}
 				}
-				if(j != 0 && j != MAX_COL_COUNT-1){
-					if(mTiles[i,j].IsBlowable && mTiles[i,j-1].IsBlowable && mTiles[i,j+1].IsBlowable){
-						if(mTiles[i,j-1].Status.Color == mTiles[i,j].Status.Color &&
-							mTiles[i,j+1].Status.Color == mTiles[i,j].Status.Color){
-							blownUpStatus[i,j].Horizontal = true;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.NONE;
-							blownUpStatus[i,j-1].Horizontal = true;
-							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.NONE;
-							blownUpStatus[i,j+1].Horizontal = true;
-							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.NONE;
-							isBlown = true;
-						}
-					}
+				if(serialCount >= BLOW_MINIMUM_COUNT){
+					blownUpStatus[i,j].Horizontal = true;
 				}
 			}
 		}
 		
+		int[][] fiveRightIndex = new int[5][];
+		fiveRightIndex[0] = new int[2]; fiveRightIndex[0][0] = 0; fiveRightIndex[0][1] = 0;
+		fiveRightIndex[1] = new int[2]; fiveRightIndex[1][0] = 0; fiveRightIndex[1][1] = 1;
+		fiveRightIndex[2] = new int[2]; fiveRightIndex[2][0] = 0; fiveRightIndex[2][1] = 2;
+		fiveRightIndex[3] = new int[2]; fiveRightIndex[3][0] = 0; fiveRightIndex[3][1] = 3;
+		fiveRightIndex[4] = new int[2]; fiveRightIndex[4][0] = 0; fiveRightIndex[4][1] = 4;
+		
+		int[][] fiveDownIndex = new int[5][];
+		fiveDownIndex[0] = new int[2]; fiveDownIndex[0][0] = 0; fiveDownIndex[0][1] = 0;
+		fiveDownIndex[1] = new int[2]; fiveDownIndex[1][0] = 1; fiveDownIndex[1][1] = 0;
+		fiveDownIndex[2] = new int[2]; fiveDownIndex[2][0] = 2; fiveDownIndex[2][1] = 0;
+		fiveDownIndex[3] = new int[2]; fiveDownIndex[3][0] = 3; fiveDownIndex[3][1] = 0;
+		fiveDownIndex[4] = new int[2]; fiveDownIndex[4][0] = 4; fiveDownIndex[4][1] = 0;
+
 		//five 
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
-				
-				TileTypeManager.TileColor nCol = mTiles[i,j].Status.Color;
-				
-				// Vertical
-				if(i >= 2 && i < MAX_ROW_COUNT-2){
-					if(mTiles[i-2,j].Status.Color == nCol &&
-						mTiles[i-1,j].Status.Color == nCol &&
-						mTiles[i+1,j].Status.Color == nCol &&
-						mTiles[i+2,j].Status.Color == nCol){
-						
-						blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i+2,j].Shape = BlownUpStatus.EffectShape.FIVE;
-					}
-				}
 				// Horizontal
-				if(j >= 2 && j < MAX_COL_COUNT-2){
-					if(mTiles[i,j-2].Status.Color == nCol &&
-						mTiles[i,j-1].Status.Color == nCol &&
-						mTiles[i,j+1].Status.Color == nCol &&
-						mTiles[i,j+2].Status.Color == nCol){
-						
-						blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.FIVE;
-						blownUpStatus[i,j+2].Shape = BlownUpStatus.EffectShape.FIVE;
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, fiveRightIndex)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, fiveRightIndex, BlownUpStatus.EffectShape.FIVE);
+				}
+				// Vertical
+				if(TileScript.HasSameColor(mTiles, i, j, fiveDownIndex)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, fiveDownIndex, BlownUpStatus.EffectShape.FIVE);
 				}
 			}
 		}
+		
+		int[][] L1Index = new int[5][];
+		L1Index[0] = new int[2]; L1Index[0][0] = 0; L1Index[0][1] = 0;
+		L1Index[1] = new int[2]; L1Index[1][0] = 0; L1Index[1][1] = -1;
+		L1Index[2] = new int[2]; L1Index[2][0] = 0; L1Index[2][1] = -2;
+		L1Index[3] = new int[2]; L1Index[3][0] = 1; L1Index[3][1] = 0;
+		L1Index[4] = new int[2]; L1Index[4][0] = 2; L1Index[4][1] = 0;
+		
+		int[][] L2Index = new int[5][];
+		L2Index[0] = new int[2]; L2Index[0][0] = 0; L2Index[0][1] = 0;
+		L2Index[1] = new int[2]; L2Index[1][0] = 0; L2Index[1][1] = -1;
+		L2Index[2] = new int[2]; L2Index[2][0] = 0; L2Index[2][1] = -2;
+		L2Index[3] = new int[2]; L2Index[3][0] = -1; L2Index[3][1] = 0;
+		L2Index[4] = new int[2]; L2Index[4][0] = -2; L2Index[4][1] = 0;
+		
+		int[][] L3Index = new int[5][];
+		L3Index[0] = new int[2]; L3Index[0][0] = 0; L3Index[0][1] = 0;
+		L3Index[1] = new int[2]; L3Index[1][0] = 0; L3Index[1][1] = 1;
+		L3Index[2] = new int[2]; L3Index[2][0] = 0; L3Index[2][1] = 2;
+		L3Index[3] = new int[2]; L3Index[3][0] = -1; L3Index[3][1] = 0;
+		L3Index[4] = new int[2]; L3Index[4][0] = -2; L3Index[4][1] = 0;
+		
+		int[][] L4Index = new int[5][];
+		L4Index[0] = new int[2]; L4Index[0][0] = 0; L4Index[0][1] = 0;
+		L4Index[1] = new int[2]; L4Index[1][0] = 0; L4Index[1][1] = 1;
+		L4Index[2] = new int[2]; L4Index[2][0] = 0; L4Index[2][1] = 2;
+		L4Index[3] = new int[2]; L4Index[3][0] = 1; L4Index[3][1] = 0;
+		L4Index[4] = new int[2]; L4Index[4][0] = 2; L4Index[4][1] = 0;
 		
 		//Giyeok
 		for(i=0;i<MAX_ROW_COUNT;i++){
 			for(j=0;j<MAX_COL_COUNT;j++){
 				// Giyeok and right rotation
-				TileTypeManager.TileColor nCol = mTiles[i,j].Status.Color;
 				//first Giyeok
-				if(j >= 2 && i < MAX_ROW_COUNT-2){
-					if(mTiles[i,j-2].Status.Color == nCol &&
-						mTiles[i,j-1].Status.Color == nCol &&
-						mTiles[i+1,j].Status.Color == nCol &&
-						mTiles[i+2,j].Status.Color == nCol){
-						
-						if(blownUpStatus[i,j-2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j-1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i+1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
-							blownUpStatus[i+2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
-						
-							blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i+2,j].Shape = BlownUpStatus.EffectShape.L;
-						}
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, L1Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, L1Index, BlownUpStatus.EffectShape.L);
 				}
 				//second Giyeok
-				if(j >= 2 && i >= 2){
-					if(mTiles[i,j-2].Status.Color == nCol &&
-						mTiles[i,j-1].Status.Color == nCol &&
-						mTiles[i-1,j].Status.Color == nCol &&
-						mTiles[i-2,j].Status.Color == nCol){
-						
-						if(blownUpStatus[i,j-2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j-1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i-1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
-							blownUpStatus[i-2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
-						
-							blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.L;
-						}
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, L2Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, L2Index, BlownUpStatus.EffectShape.L);
 				}
 				// third Giyeok
-				if(j < MAX_COL_COUNT-2 && i >= 2){
-					if(mTiles[i,j+2].Status.Color == nCol &&
-						mTiles[i,j+1].Status.Color == nCol &&
-						mTiles[i-1,j].Status.Color == nCol &&
-						mTiles[i-2,j].Status.Color == nCol){
-						
-						if(blownUpStatus[i,j+2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j+1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i-1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
-							blownUpStatus[i-2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
-						
-							blownUpStatus[i,j+2].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.L;
-						}
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, L3Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, L3Index, BlownUpStatus.EffectShape.L);
 				}
 				//fourth Giyeok
-				if(j < MAX_COL_COUNT-2 && i < MAX_ROW_COUNT-2){
-					if(mTiles[i,j+2].Status.Color == nCol &&
-						mTiles[i,j+1].Status.Color == nCol &&
-						mTiles[i+1,j].Status.Color == nCol &&
-						mTiles[i+2,j].Status.Color == nCol){
-						
-						if(blownUpStatus[i,j+2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j+1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
-							blownUpStatus[i+1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
-							blownUpStatus[i+2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
-						
-							blownUpStatus[i,j+2].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.L;
-							blownUpStatus[i+2,j].Shape = BlownUpStatus.EffectShape.L;
-						}
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, L4Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, L4Index, BlownUpStatus.EffectShape.L);
 				}
 			}
 		}
+
+		int[][] fourRightIndex = new int[4][];
+		fourRightIndex[0] = new int[2]; fourRightIndex[0][0] = 0; fourRightIndex[0][1] = 0;
+		fourRightIndex[1] = new int[2]; fourRightIndex[1][0] = 0; fourRightIndex[1][1] = 1;
+		fourRightIndex[2] = new int[2]; fourRightIndex[2][0] = 0; fourRightIndex[2][1] = 2;
+		fourRightIndex[3] = new int[2]; fourRightIndex[3][0] = 0; fourRightIndex[3][1] = 3;
+		
+		int[][] fourDownIndex = new int[4][];
+		fourDownIndex[0] = new int[2]; fourDownIndex[0][0] = 0; fourDownIndex[0][1] = 0;
+		fourDownIndex[1] = new int[2]; fourDownIndex[1][0] = 1; fourDownIndex[1][1] = 0;
+		fourDownIndex[2] = new int[2]; fourDownIndex[2][0] = 2; fourDownIndex[2][1] = 0;
+		fourDownIndex[3] = new int[2]; fourDownIndex[3][0] = 3; fourDownIndex[3][1] = 0;
+
 		//Four
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
-				
-				TileTypeManager.TileColor nCol = mTiles[i,j].Status.Color;
-				
 				// Vertical
-				if(i >= 2 && i < MAX_ROW_COUNT-1){
-					if(mTiles[i-2,j].Status.Color == nCol &&
-						mTiles[i-1,j].Status.Color == nCol &&
-						mTiles[i+1,j].Status.Color == nCol ){
-						
-						if(blownUpStatus[i-2,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR) &&
-							blownUpStatus[i-1,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR) &&
-							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR) &&
-							blownUpStatus[i+1,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR)){
-							
-							blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.FOUR;
-							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.FOUR;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FOUR;
-							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.FOUR;
-						}
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, fourDownIndex)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, fourDownIndex, BlownUpStatus.EffectShape.FOUR);
 				}
 				// Horizontal
-				if(j >= 2 && j < MAX_COL_COUNT-1){
-					if(mTiles[i,j-2].Status.Color == nCol &&
-						mTiles[i,j-1].Status.Color == nCol &&
-						mTiles[i,j+1].Status.Color == nCol ){
-						
-						if(blownUpStatus[i,j-2].isSameEffectShape(BlownUpStatus.EffectShape.FOUR) &&
-							blownUpStatus[i,j-1].isSameEffectShape(BlownUpStatus.EffectShape.FOUR) &&
-							blownUpStatus[i,j].isSameEffectShape(BlownUpStatus.EffectShape.FOUR) &&
-							blownUpStatus[i,j+1].isSameEffectShape(BlownUpStatus.EffectShape.FOUR)){
-							
-							blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.FOUR;
-							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.FOUR;
-							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FOUR;
-							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.FOUR;
-						}
-					}
+				if(TileScript.HasSameColor(mTiles, i, j, fourRightIndex)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, fourRightIndex, BlownUpStatus.EffectShape.FOUR);
 				}
 			}
 		}
@@ -414,7 +339,7 @@ public class InGameLogicScript : MonoBehaviour {
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				// add
-				if(blownUpStatus[i,j].isBlownUp()) {
+				if(blownUpStatus[i,j].IsBlownUp()) {
 					mTiles[i,j].Status.CountToDestroy--;
 					if(mTiles[i,j].Status.CountToDestroy <= 0) {
 						//Tile Destroyed :: give exp, money and special effects
