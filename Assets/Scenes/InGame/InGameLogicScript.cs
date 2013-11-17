@@ -2,41 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TilesBlownUp{
-	public bool Vertical;
-	public bool Horizontal;
-	public enum Kind{
-		Trash,
-		Five,
-		L,
-		Four
-	};
-	
-	public Kind kind;
-	public bool isBlownUp(){
-		return Vertical || Horizontal;
-	}
-	public bool itsMe(Kind kk){
-		if(kind == kk || kind == Kind.Trash){
-			return true;
-		}
-		else return false;
-	}
-	public static void Construct(TilesBlownUp[,] tilesBlownUp){
-		int i,j;
-		int n,m;
-		
-		n = tilesBlownUp.GetLength(0);
-		m = tilesBlownUp.GetLength(1);
-		
-		for(i=0;i<n;i++){
-			for(j=0;j<m;j++){
-				tilesBlownUp[i,j] = new TilesBlownUp();
-			}
-		}
-	}
-}
-
 public class InGameLogicScript : MonoBehaviour {
 	private const int MAX_ROW_COUNT = 8;
 	private const int MAX_COL_COUNT = 8;
@@ -71,10 +36,10 @@ public class InGameLogicScript : MonoBehaviour {
 			}
 		}
 		
-		TilesBlownUp[,] tilesBlownUpTemp = new TilesBlownUp[MAX_ROW_COUNT, MAX_COL_COUNT];
-		TilesBlownUp.Construct(tilesBlownUpTemp);
+		BlownUpStatus[,] blownUpStatusTemp = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
+		BlownUpStatus.Construct(blownUpStatusTemp);
 		
-		while(CheckBlowUpTiles(tilesBlownUpTemp)) {
+		while(CheckBlowUpTiles(blownUpStatusTemp)) {
 			for(i=0;i<MAX_ROW_COUNT;i++) {
 				for(j=0;j<MAX_COL_COUNT;j++) {
 					mTiles[i, j].SetTile(new TileStatus());
@@ -196,7 +161,7 @@ public class InGameLogicScript : MonoBehaviour {
 		StartCoroutine(InGameAnimationManager.Instance.MoveAnimation(destinationTile, destinationTile.GetTileVector()));
 	}
 
-	private bool CheckBlowUpTiles(TilesBlownUp [,] tilesBlownUp) {
+	private bool CheckBlowUpTiles(BlownUpStatus [,] blownUpStatus) {
 		int i, j;
 		bool isBlown = false;
 		for(i=0;i<MAX_ROW_COUNT;i++) {
@@ -208,11 +173,11 @@ public class InGameLogicScript : MonoBehaviour {
 					if(!mTiles[i,j+k].IsBlowable || mTiles[i,j].Status.Color != mTiles[i,j+k].Status.Color) break;
 				}
 				if(k >= BLOW_MINIMUM_COUNT) {
-					tilesBlownUp[i, j] = true;
+					blownUpStatus[i, j] = true;
 					isBlown = true;
 					for(k=1;k<MAX_COL_COUNT-j;k++) {
 						if(!mTiles[i,j+k].IsBlowable || mTiles[i,j].Status.Color != mTiles[i,j+k].Status.Color) break;
-						tilesBlownUp[i, j+k] = true;
+						blownUpStatus[i, j+k] = true;
 					}
 				}
 				
@@ -221,23 +186,23 @@ public class InGameLogicScript : MonoBehaviour {
 					if(!mTiles[i+k,j].IsBlowable || mTiles[i,j].Status.Color != mTiles[i+k,j].Status.Color) break;
 				}
 				if(k >= BLOW_MINIMUM_COUNT) {
-					tilesBlownUp[i, j] = true;
+					blownUpStatus[i, j] = true;
 					isBlown = true;
 					for(k=1;k<MAX_ROW_COUNT-i;k++) {
 						if(!mTiles[i+k,j].IsBlowable || mTiles[i,j].Status.Color != mTiles[i+k,j].Status.Color) break;
-						tilesBlownUp[i+k, j] = true;
+						blownUpStatus[i+k, j] = true;
 					}
 				}*/
 				if(i != 0 && i != MAX_ROW_COUNT-1){
 					if(mTiles[i,j].IsBlowable && mTiles[i-1,j].IsBlowable && mTiles[i+1,j].IsBlowable){
 						if(mTiles[i-1,j].Status.Color == mTiles[i,j].Status.Color &&
 							mTiles[i+1,j].Status.Color == mTiles[i,j].Status.Color){
-							tilesBlownUp[i,j].Vertical = true;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Trash;
-							tilesBlownUp[i-1,j].Vertical = true;
-							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Trash;
-							tilesBlownUp[i+1,j].Vertical = true;
-							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.Trash;
+							blownUpStatus[i,j].Vertical = true;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.NONE;
+							blownUpStatus[i-1,j].Vertical = true;
+							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.NONE;
+							blownUpStatus[i+1,j].Vertical = true;
+							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.NONE;
 							isBlown = true;
 						}
 					}
@@ -246,12 +211,12 @@ public class InGameLogicScript : MonoBehaviour {
 					if(mTiles[i,j].IsBlowable && mTiles[i,j-1].IsBlowable && mTiles[i,j+1].IsBlowable){
 						if(mTiles[i,j-1].Status.Color == mTiles[i,j].Status.Color &&
 							mTiles[i,j+1].Status.Color == mTiles[i,j].Status.Color){
-							tilesBlownUp[i,j].Horizontal = true;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Trash;
-							tilesBlownUp[i,j-1].Horizontal = true;
-							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Trash;
-							tilesBlownUp[i,j+1].Horizontal = true;
-							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.Trash;
+							blownUpStatus[i,j].Horizontal = true;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.NONE;
+							blownUpStatus[i,j-1].Horizontal = true;
+							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.NONE;
+							blownUpStatus[i,j+1].Horizontal = true;
+							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.NONE;
 							isBlown = true;
 						}
 					}
@@ -272,11 +237,11 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i+1,j].Status.Color == nCol &&
 						mTiles[i+2,j].Status.Color == nCol){
 						
-						tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i+2,j].kind = TilesBlownUp.Kind.Five;
+						blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i+2,j].Shape = BlownUpStatus.EffectShape.FIVE;
 					}
 				}
 				// Horizontal
@@ -286,11 +251,11 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i,j+1].Status.Color == nCol &&
 						mTiles[i,j+2].Status.Color == nCol){
 						
-						tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.Five;
-						tilesBlownUp[i,j+2].kind = TilesBlownUp.Kind.Five;
+						blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.FIVE;
+						blownUpStatus[i,j+2].Shape = BlownUpStatus.EffectShape.FIVE;
 					}
 				}
 			}
@@ -308,17 +273,17 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i+1,j].Status.Color == nCol &&
 						mTiles[i+2,j].Status.Color == nCol){
 						
-						if(tilesBlownUp[i,j-2].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j-1].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i+1,j].itsMe (TilesBlownUp.Kind.L)&&
-							tilesBlownUp[i+2,j].itsMe (TilesBlownUp.Kind.L)){
+						if(blownUpStatus[i,j-2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j-1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i+1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
+							blownUpStatus[i+2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
 						
-							tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i+2,j].kind = TilesBlownUp.Kind.L;
+							blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i+2,j].Shape = BlownUpStatus.EffectShape.L;
 						}
 					}
 				}
@@ -329,17 +294,17 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i-1,j].Status.Color == nCol &&
 						mTiles[i-2,j].Status.Color == nCol){
 						
-						if(tilesBlownUp[i,j-2].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j-1].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.L)&&
-							tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.L)){
+						if(blownUpStatus[i,j-2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j-1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i-1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
+							blownUpStatus[i-2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
 						
-							tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.L;
+							blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.L;
 						}
 					}
 				}
@@ -350,17 +315,17 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i-1,j].Status.Color == nCol &&
 						mTiles[i-2,j].Status.Color == nCol){
 						
-						if(tilesBlownUp[i,j+2].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j+1].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.L)&&
-							tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.L)){
+						if(blownUpStatus[i,j+2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j+1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i-1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
+							blownUpStatus[i-2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
 						
-							tilesBlownUp[i,j+2].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.L;
+							blownUpStatus[i,j+2].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.L;
 						}
 					}
 				}
@@ -371,17 +336,17 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i+1,j].Status.Color == nCol &&
 						mTiles[i+2,j].Status.Color == nCol){
 						
-						if(tilesBlownUp[i,j+2].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j+1].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.L) &&
-							tilesBlownUp[i+1,j].itsMe (TilesBlownUp.Kind.L)&&
-							tilesBlownUp[i+2,j].itsMe (TilesBlownUp.Kind.L)){
+						if(blownUpStatus[i,j+2].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j+1].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.L) &&
+							blownUpStatus[i+1,j].isSameEffectShape (BlownUpStatus.EffectShape.L)&&
+							blownUpStatus[i+2,j].isSameEffectShape (BlownUpStatus.EffectShape.L)){
 						
-							tilesBlownUp[i,j+2].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.L;
-							tilesBlownUp[i+2,j].kind = TilesBlownUp.Kind.L;
+							blownUpStatus[i,j+2].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.L;
+							blownUpStatus[i+2,j].Shape = BlownUpStatus.EffectShape.L;
 						}
 					}
 				}
@@ -399,15 +364,15 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i-1,j].Status.Color == nCol &&
 						mTiles[i+1,j].Status.Color == nCol ){
 						
-						if(tilesBlownUp[i-2,j].itsMe (TilesBlownUp.Kind.Four) &&
-							tilesBlownUp[i-1,j].itsMe (TilesBlownUp.Kind.Four) &&
-							tilesBlownUp[i,j].itsMe (TilesBlownUp.Kind.Four) &&
-							tilesBlownUp[i+1,j].itsMe (TilesBlownUp.Kind.Four)){
+						if(blownUpStatus[i-2,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR) &&
+							blownUpStatus[i-1,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR) &&
+							blownUpStatus[i,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR) &&
+							blownUpStatus[i+1,j].isSameEffectShape (BlownUpStatus.EffectShape.FOUR)){
 							
-							tilesBlownUp[i-2,j].kind = TilesBlownUp.Kind.Four;
-							tilesBlownUp[i-1,j].kind = TilesBlownUp.Kind.Four;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Four;
-							tilesBlownUp[i+1,j].kind = TilesBlownUp.Kind.Four;
+							blownUpStatus[i-2,j].Shape = BlownUpStatus.EffectShape.FOUR;
+							blownUpStatus[i-1,j].Shape = BlownUpStatus.EffectShape.FOUR;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FOUR;
+							blownUpStatus[i+1,j].Shape = BlownUpStatus.EffectShape.FOUR;
 						}
 					}
 				}
@@ -417,15 +382,15 @@ public class InGameLogicScript : MonoBehaviour {
 						mTiles[i,j-1].Status.Color == nCol &&
 						mTiles[i,j+1].Status.Color == nCol ){
 						
-						if(tilesBlownUp[i,j-2].itsMe(TilesBlownUp.Kind.Four) &&
-							tilesBlownUp[i,j-1].itsMe(TilesBlownUp.Kind.Four) &&
-							tilesBlownUp[i,j].itsMe(TilesBlownUp.Kind.Four) &&
-							tilesBlownUp[i,j+1].itsMe(TilesBlownUp.Kind.Four)){
+						if(blownUpStatus[i,j-2].isSameEffectShape(BlownUpStatus.EffectShape.FOUR) &&
+							blownUpStatus[i,j-1].isSameEffectShape(BlownUpStatus.EffectShape.FOUR) &&
+							blownUpStatus[i,j].isSameEffectShape(BlownUpStatus.EffectShape.FOUR) &&
+							blownUpStatus[i,j+1].isSameEffectShape(BlownUpStatus.EffectShape.FOUR)){
 							
-							tilesBlownUp[i,j-2].kind = TilesBlownUp.Kind.Four;
-							tilesBlownUp[i,j-1].kind = TilesBlownUp.Kind.Four;
-							tilesBlownUp[i,j].kind = TilesBlownUp.Kind.Four;
-							tilesBlownUp[i,j+1].kind = TilesBlownUp.Kind.Four;
+							blownUpStatus[i,j-2].Shape = BlownUpStatus.EffectShape.FOUR;
+							blownUpStatus[i,j-1].Shape = BlownUpStatus.EffectShape.FOUR;
+							blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.FOUR;
+							blownUpStatus[i,j+1].Shape = BlownUpStatus.EffectShape.FOUR;
 						}
 					}
 				}
@@ -436,12 +401,12 @@ public class InGameLogicScript : MonoBehaviour {
 	
 	private bool BlowUpTiles() {
 		int i, j;
-		TilesBlownUp[,] tilesBlownUp = new TilesBlownUp[MAX_ROW_COUNT, MAX_COL_COUNT];
-		TilesBlownUp.Construct(tilesBlownUp);
+		BlownUpStatus[,] blownUpStatus = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
+		BlownUpStatus.Construct(blownUpStatus);
 		
 		bool[,] tilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
 		
-		if(!CheckBlowUpTiles(tilesBlownUp)) return false;
+		if(!CheckBlowUpTiles(blownUpStatus)) return false;
 		
 		
 		
@@ -449,7 +414,7 @@ public class InGameLogicScript : MonoBehaviour {
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				// add
-				if(tilesBlownUp[i,j].isBlownUp()) {
+				if(blownUpStatus[i,j].isBlownUp()) {
 					mTiles[i,j].Status.CountToDestroy--;
 					if(mTiles[i,j].Status.CountToDestroy <= 0) {
 						//Tile Destroyed :: give exp, money and special effects
