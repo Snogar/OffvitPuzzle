@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class InGameUIManager : MonoBehaviour 
 {
-	private tk2dTextMesh mHP;
-	private tk2dTextMesh mTurn;
+	private UILabel mHP;
+	private UILabel mTurn;
 	
 	private static InGameUIManager instance;
 	public static InGameUIManager Instance {
@@ -14,8 +14,8 @@ public class InGameUIManager : MonoBehaviour
 	private void Awake() {
 		instance = this;
 		
-		mHP = transform.Find("HP").GetComponent<tk2dTextMesh>();
-		mTurn = transform.Find("Turn").GetComponent<tk2dTextMesh>();
+		mHP = transform.Find("HP").GetComponent<UILabel>();
+		mTurn = transform.Find("Turn").GetComponent<UILabel>();
 	}
 	
 	private void Start () {
@@ -26,12 +26,10 @@ public class InGameUIManager : MonoBehaviour
 	
 	public void UpdateHP(int hp) {
 		mHP.text = "HP : " + hp;
-		mHP.Commit();
 	}
 	
 	public void UpdateTurn(int turn) {
 		mTurn.text = "TURN : " + turn;
-		mTurn.Commit();
 	}
 }
 
