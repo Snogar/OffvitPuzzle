@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 
 public class BlownUpStatus
@@ -11,17 +12,26 @@ public class BlownUpStatus
 		L,
 		FOUR
 	};
-	
 	public EffectShape Shape;
-	public bool isBlownUp(){
+	
+	public BlownUpStatus()
+	{
+		this.Vertical = false;
+		this.Horizontal = false;
+		this.Shape = EffectShape.NONE;
+	}
+	
+	public bool IsBlownUp(){
 		return Vertical || Horizontal;
 	}
-	public bool isSameEffectShape(EffectShape centerShape){
+	
+	public bool IsSameEffectShape(EffectShape centerShape){
 		if(this.Shape == centerShape || this.Shape == EffectShape.NONE){
 			return true;
 		}
 		else return false;
 	}
+	
 	public static void Construct(BlownUpStatus[,] blownUpStatus){
 		int row = blownUpStatus.GetLength(0);
 		int col = blownUpStatus.GetLength(1);
@@ -30,6 +40,23 @@ public class BlownUpStatus
 			for(int j=0;j<col;j++){
 				blownUpStatus[i,j] = new BlownUpStatus();
 			}
+		}
+	}
+	
+	public static void SetShape(BlownUpStatus[,] blownUpStatus, int pivotRow, int pivotCol, int[][] IndexList, EffectShape shape)
+	{
+		foreach(int[] index in IndexList){
+			int currentRow = pivotRow + index[0];
+			int currentCol = pivotCol + index[1];
+			
+			if(!blownUpStatus[currentRow, currentCol].IsSameEffectShape(shape)) return;
+		}
+		
+		foreach(int[] index in IndexList){
+			int currentRow = pivotRow + index[0];
+			int currentCol = pivotCol + index[1];
+			
+			blownUpStatus[currentRow, currentCol].Shape = shape;
 		}
 	}
 }
