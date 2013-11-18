@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class InGameLogicScript : MonoBehaviour {
+public class InGameLogicManager : MonoBehaviour {
 	private const int MAX_ROW_COUNT = 8;
 	private const int MAX_COL_COUNT = 8;
 	private const int BLOW_MINIMUM_COUNT = 3;
@@ -14,8 +14,8 @@ public class InGameLogicScript : MonoBehaviour {
 	private int mTurn;
 	private int mMovingCount;
 	
-	private static InGameLogicScript instance;
-	public static InGameLogicScript Instance {
+	private static InGameLogicManager instance;
+	public static InGameLogicManager Instance {
 		get { return instance; }
 	}
 	private void Awake() {
@@ -25,11 +25,13 @@ public class InGameLogicScript : MonoBehaviour {
 	// Use this for initialization
 	private void Start () {
 		int i, j;
-		mClickedTile = null;
+		GameObject tileObject = Resources.Load("InGame/Tile", typeof(GameObject)) as GameObject;
+		
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
-				GameObject go = new GameObject("tile(" + i + "," + j + ")");
-				TileScript tileScript = (TileScript)go.AddComponent("TileScript");
+				GameObject tileObjectClone = (GameObject)Instantiate(tileObject);
+				tileObjectClone.name = "Tile(" + i + "," + j + ")";
+				TileScript tileScript = tileObjectClone.GetComponent<TileScript>();
 				tileScript.Init(i, j, new TileStatus());
 				
 				mTiles[i, j] = tileScript;
@@ -47,6 +49,7 @@ public class InGameLogicScript : MonoBehaviour {
 			}
 		}
 		
+		mClickedTile = null;
 		mIsSwapEnable = false;
 		mIsReSwapNeeded = false;
 		mIsEnemyActionDone = false;
@@ -217,19 +220,8 @@ public class InGameLogicScript : MonoBehaviour {
 			}
 		}
 		
-		int[][] fiveRightIndex = new int[5][];
-		fiveRightIndex[0] = new int[2]; fiveRightIndex[0][0] = 0; fiveRightIndex[0][1] = 0;
-		fiveRightIndex[1] = new int[2]; fiveRightIndex[1][0] = 0; fiveRightIndex[1][1] = 1;
-		fiveRightIndex[2] = new int[2]; fiveRightIndex[2][0] = 0; fiveRightIndex[2][1] = 2;
-		fiveRightIndex[3] = new int[2]; fiveRightIndex[3][0] = 0; fiveRightIndex[3][1] = 3;
-		fiveRightIndex[4] = new int[2]; fiveRightIndex[4][0] = 0; fiveRightIndex[4][1] = 4;
-		
-		int[][] fiveDownIndex = new int[5][];
-		fiveDownIndex[0] = new int[2]; fiveDownIndex[0][0] = 0; fiveDownIndex[0][1] = 0;
-		fiveDownIndex[1] = new int[2]; fiveDownIndex[1][0] = 1; fiveDownIndex[1][1] = 0;
-		fiveDownIndex[2] = new int[2]; fiveDownIndex[2][0] = 2; fiveDownIndex[2][1] = 0;
-		fiveDownIndex[3] = new int[2]; fiveDownIndex[3][0] = 3; fiveDownIndex[3][1] = 0;
-		fiveDownIndex[4] = new int[2]; fiveDownIndex[4][0] = 4; fiveDownIndex[4][1] = 0;
+		int[,] fiveRightIndex = new int[5,2] {{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}};
+		int[,] fiveDownIndex  = new int[5,2] {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}};
 
 		//five 
 		for(i=0;i<MAX_ROW_COUNT;i++) {
@@ -245,33 +237,10 @@ public class InGameLogicScript : MonoBehaviour {
 			}
 		}
 		
-		int[][] L1Index = new int[5][];
-		L1Index[0] = new int[2]; L1Index[0][0] = 0; L1Index[0][1] = 0;
-		L1Index[1] = new int[2]; L1Index[1][0] = 0; L1Index[1][1] = -1;
-		L1Index[2] = new int[2]; L1Index[2][0] = 0; L1Index[2][1] = -2;
-		L1Index[3] = new int[2]; L1Index[3][0] = 1; L1Index[3][1] = 0;
-		L1Index[4] = new int[2]; L1Index[4][0] = 2; L1Index[4][1] = 0;
-		
-		int[][] L2Index = new int[5][];
-		L2Index[0] = new int[2]; L2Index[0][0] = 0; L2Index[0][1] = 0;
-		L2Index[1] = new int[2]; L2Index[1][0] = 0; L2Index[1][1] = -1;
-		L2Index[2] = new int[2]; L2Index[2][0] = 0; L2Index[2][1] = -2;
-		L2Index[3] = new int[2]; L2Index[3][0] = -1; L2Index[3][1] = 0;
-		L2Index[4] = new int[2]; L2Index[4][0] = -2; L2Index[4][1] = 0;
-		
-		int[][] L3Index = new int[5][];
-		L3Index[0] = new int[2]; L3Index[0][0] = 0; L3Index[0][1] = 0;
-		L3Index[1] = new int[2]; L3Index[1][0] = 0; L3Index[1][1] = 1;
-		L3Index[2] = new int[2]; L3Index[2][0] = 0; L3Index[2][1] = 2;
-		L3Index[3] = new int[2]; L3Index[3][0] = -1; L3Index[3][1] = 0;
-		L3Index[4] = new int[2]; L3Index[4][0] = -2; L3Index[4][1] = 0;
-		
-		int[][] L4Index = new int[5][];
-		L4Index[0] = new int[2]; L4Index[0][0] = 0; L4Index[0][1] = 0;
-		L4Index[1] = new int[2]; L4Index[1][0] = 0; L4Index[1][1] = 1;
-		L4Index[2] = new int[2]; L4Index[2][0] = 0; L4Index[2][1] = 2;
-		L4Index[3] = new int[2]; L4Index[3][0] = 1; L4Index[3][1] = 0;
-		L4Index[4] = new int[2]; L4Index[4][0] = 2; L4Index[4][1] = 0;
+		int[,] L1Index = new int[5,2] {{0, 0}, {0, -1}, {0, -2}, {1,  0}, {2,  0}};
+		int[,] L2Index = new int[5,2] {{0, 0}, {0, -1}, {0, -2}, {-1, 0}, {-2, 0}};
+		int[,] L3Index = new int[5,2] {{0, 0}, {0,  1}, {0,  2}, {-1, 0}, {-2, 0}};
+		int[,] L4Index = new int[5,2] {{0, 0}, {0,  1}, {0,  2}, {1,  0}, {2,  0}};
 		
 		//Giyeok
 		for(i=0;i<MAX_ROW_COUNT;i++){
@@ -295,18 +264,9 @@ public class InGameLogicScript : MonoBehaviour {
 				}
 			}
 		}
-
-		int[][] fourRightIndex = new int[4][];
-		fourRightIndex[0] = new int[2]; fourRightIndex[0][0] = 0; fourRightIndex[0][1] = 0;
-		fourRightIndex[1] = new int[2]; fourRightIndex[1][0] = 0; fourRightIndex[1][1] = 1;
-		fourRightIndex[2] = new int[2]; fourRightIndex[2][0] = 0; fourRightIndex[2][1] = 2;
-		fourRightIndex[3] = new int[2]; fourRightIndex[3][0] = 0; fourRightIndex[3][1] = 3;
 		
-		int[][] fourDownIndex = new int[4][];
-		fourDownIndex[0] = new int[2]; fourDownIndex[0][0] = 0; fourDownIndex[0][1] = 0;
-		fourDownIndex[1] = new int[2]; fourDownIndex[1][0] = 1; fourDownIndex[1][1] = 0;
-		fourDownIndex[2] = new int[2]; fourDownIndex[2][0] = 2; fourDownIndex[2][1] = 0;
-		fourDownIndex[3] = new int[2]; fourDownIndex[3][0] = 3; fourDownIndex[3][1] = 0;
+		int[,] fourRightIndex = new int[4,2] {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
+		int[,] fourDownIndex  = new int[4,2] {{0, 0}, {1, 0}, {2, 0}, {3, 0}};
 
 		//Four
 		for(i=0;i<MAX_ROW_COUNT;i++) {
@@ -333,8 +293,6 @@ public class InGameLogicScript : MonoBehaviour {
 		
 		if(!CheckBlowUpTiles(blownUpStatus)) return false;
 		
-		
-		
 		// delete 
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
@@ -360,7 +318,7 @@ public class InGameLogicScript : MonoBehaviour {
 					if(q.Count > 0) {
 						row = q.Dequeue();
 						mTiles[row, j].IsBlowable = false;
-						mTiles[row, j].SetPosition(mTiles[i,j].gameObject.transform.position);
+						mTiles[row, j].SetPosition(mTiles[i,j].gameObject.transform.localPosition);
 						mTiles[row, j].SetTile(mTiles[i,j].Status);
 						StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
 						q.Enqueue(i);
@@ -374,7 +332,7 @@ public class InGameLogicScript : MonoBehaviour {
 				
 				Vector3 topTilePosition = TileScript.GetTileVectorWithRowCol(0, j);
 				if(q.Count + 1 < MAX_ROW_COUNT) {
-					Vector3 lastFellingTilePosition = mTiles[q.Count+1,j].gameObject.transform.position;
+					Vector3 lastFellingTilePosition = mTiles[q.Count+1,j].gameObject.transform.localPosition;
 					if(lastFellingTilePosition.y <= topTilePosition.y) 
 						mTiles[row, j].SetPosition(new Vector3(topTilePosition.x, topTilePosition.y+TileScript.tileSize, 0));
 					else 

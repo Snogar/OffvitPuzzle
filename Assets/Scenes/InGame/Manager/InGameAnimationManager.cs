@@ -32,27 +32,27 @@ public class InGameAnimationManager : MonoBehaviour {
 	public IEnumerator MoveAnimation(TileScript tile, Vector3 destination) {
 		//resetTileAction(tile);
 		//yield return new WaitForSeconds(0.05f);
-		iTween.MoveTo(tile.gameObject, iTween.Hash("x", destination.x, "y", destination.y, "easeType", "easeInOutSine", "time", SWAP_ANIMATION_TIME, "onComplete", "onCompleteTileAction", "onCompleteTarget", gameObject, "onCompleteParams", tile));
+		iTween.MoveTo(tile.gameObject, iTween.Hash("isLocal", true, "x", destination.x, "y", destination.y, "easeType", "easeInOutSine", "time", SWAP_ANIMATION_TIME, "onComplete", "onCompleteTileAction", "onCompleteTarget", gameObject, "onCompleteParams", tile));
 		yield return null;
 	}
 	
 	public IEnumerator TileMoveToOriginalPositionStart(TileScript tile) {
 		resetTileAction(tile);
 		yield return new WaitForSeconds(0.05f);
-		iTween.MoveTo(tile.gameObject, iTween.Hash("x", tile.GetTileVector().x, "y", tile.GetTileVector().y - TileScript.tileSize/10, "easeType", "easeOutQuad", "speed", TILE_FELL_SPEED, "delay", TILE_DESTROY_DELAY, "onComplete", "TileMoveToOriginalPositionMiddle", "onCompleteTarget", gameObject, "onCompleteParams", tile));
+		iTween.MoveTo(tile.gameObject, iTween.Hash("isLocal", true, "x", tile.GetTileVector().x, "y", tile.GetTileVector().y - TileScript.tileSize/10, "easeType", "easeOutQuad", "speed", TILE_FELL_SPEED, "delay", TILE_DESTROY_DELAY, "onComplete", "TileMoveToOriginalPositionMiddle", "onCompleteTarget", gameObject, "onCompleteParams", tile));
 	}
 	public void TileMoveToOriginalPositionMiddle(TileScript tile) {
-		iTween.MoveTo(tile.gameObject, iTween.Hash("x", tile.GetTileVector().x, "y", tile.GetTileVector().y, "easeType", "easeOutQuad", "speed", TILE_BOUNCE_SPEED, "onComplete", "onCompleteTileAction", "onCompleteTarget", gameObject, "onCompleteParams", tile));
+		iTween.MoveTo(tile.gameObject, iTween.Hash("isLocal", true, "x", tile.GetTileVector().x, "y", tile.GetTileVector().y, "easeType", "easeOutQuad", "speed", TILE_BOUNCE_SPEED, "onComplete", "onCompleteTileAction", "onCompleteTarget", gameObject, "onCompleteParams", tile));
 	}
 	
 	public IEnumerator EnemyAttackActionStart(TileScript tile) {
 		resetTileAction(tile);
 		yield return new WaitForSeconds(0.05f);
-		iTween.ScaleBy(tile.gameObject, iTween.Hash("x", ENEMY_ATTACK_ACTION_SCALE, "y", ENEMY_ATTACK_ACTION_SCALE, "easeType", "linear", "time", ENEMY_ATTACK_ACTION_SCALE_TIME, "onComplete", "EnemyAttackActionMiddle", "onCompleteTarget", gameObject, "onCompleteParams", tile));
+		iTween.ScaleBy(tile.gameObject, iTween.Hash("isLocal", true, "x", ENEMY_ATTACK_ACTION_SCALE, "y", ENEMY_ATTACK_ACTION_SCALE, "easeType", "linear", "time", ENEMY_ATTACK_ACTION_SCALE_TIME, "onComplete", "EnemyAttackActionMiddle", "onCompleteTarget", gameObject, "onCompleteParams", tile));
 	}
 	public void EnemyAttackActionMiddle(TileScript tile) {
 		Vector3 origScale = TileTypeManager.Instance.GetTileScale(tile.Status.Type);
-		iTween.ScaleTo(tile.gameObject, iTween.Hash("x", origScale.x, "y", origScale.y, "easeType", "linear", "time", ENEMY_ATTACK_ACTION_SCALE_TIME, "delay", ENEMY_ATTACK_ACTION_DELAY_TIME, "onComplete", "EnemyAttackActionEnd", "onCompleteTarget", gameObject, "onCompleteParams", tile));
+		iTween.ScaleTo(tile.gameObject, iTween.Hash("isLocal", true, "x", origScale.x, "y", origScale.y, "easeType", "linear", "time", ENEMY_ATTACK_ACTION_SCALE_TIME, "delay", ENEMY_ATTACK_ACTION_DELAY_TIME, "onComplete", "EnemyAttackActionEnd", "onCompleteTarget", gameObject, "onCompleteParams", tile));
 	}
 	
 	public void EnemyAttackActionEnd(TileScript tile) {

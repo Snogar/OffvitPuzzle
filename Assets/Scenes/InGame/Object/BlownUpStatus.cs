@@ -43,18 +43,19 @@ public class BlownUpStatus
 		}
 	}
 	
-	public static void SetShape(BlownUpStatus[,] blownUpStatus, int pivotRow, int pivotCol, int[][] IndexList, EffectShape shape)
+	public static void SetShape(BlownUpStatus[,] blownUpStatus, int pivotRow, int pivotCol, int[,] indexList, EffectShape shape)
 	{
-		foreach(int[] index in IndexList){
-			int currentRow = pivotRow + index[0];
-			int currentCol = pivotCol + index[1];
+		int i;
+		for(i=0;i<indexList.GetLength(0);i++) {
+			int currentRow = pivotRow + indexList[i, 0];
+			int currentCol = pivotCol + indexList[i, 1];
 			
 			if(!blownUpStatus[currentRow, currentCol].IsSameEffectShape(shape)) return;
 		}
 		
-		foreach(int[] index in IndexList){
-			int currentRow = pivotRow + index[0];
-			int currentCol = pivotCol + index[1];
+		for(i=0;i<indexList.GetLength(0);i++) {
+			int currentRow = pivotRow + indexList[i, 0];
+			int currentCol = pivotCol + indexList[i, 1];
 			
 			blownUpStatus[currentRow, currentCol].Shape = shape;
 		}
