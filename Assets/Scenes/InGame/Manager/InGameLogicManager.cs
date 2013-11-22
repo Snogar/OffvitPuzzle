@@ -210,12 +210,12 @@ public class InGameLogicManager : MonoBehaviour {
 				}
 				if(serialCount == BLOW_MINIMUM_COUNT){
 					for(k = 1; k < BLOW_MINIMUM_COUNT; k++) {
-						blownUpStatus[i-k,j].Horizontal = true;
+						blownUpStatus[i-k,j].Vertical = true;
 					}
 					isBlown = true;
 				}
 				if(serialCount >= BLOW_MINIMUM_COUNT){
-					blownUpStatus[i,j].Horizontal = true;
+					blownUpStatus[i,j].Vertical = true;
 				}
 			}
 		}
