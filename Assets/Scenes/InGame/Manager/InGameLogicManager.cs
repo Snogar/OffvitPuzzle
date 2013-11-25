@@ -144,9 +144,7 @@ public class InGameLogicManager : MonoBehaviour {
 	
 	private void MoveTile(TileScript moveTile, TileScript destinationTile) {
 		
-		moveTile.Status.MoveTime = mMovingCount;
-		mMovingCount ++;
-		Debug.Log ("Moving Count = " + mMovingCount.ToString());
+		SetMoveTile(moveTile.Status);
 		destinationTile.IsBlowable = false;
 		destinationTile.SetPosition(moveTile.GetTileVector());
 		destinationTile.SetTile(moveTile.Status);
@@ -154,21 +152,24 @@ public class InGameLogicManager : MonoBehaviour {
 	}
 	
 	private void MoveTile(Vector3 startPosition, TileStatus tileStatus, TileScript destinationTile) {
-		
-		tileStatus.MoveTime = mMovingCount;
-		mMovingCount ++;
-		Debug.Log ("Moving Count = " + mMovingCount.ToString ());
+		SetMoveTile(tileStatus);
 		destinationTile.IsBlowable = false;
 		destinationTile.SetPosition(startPosition);
 		destinationTile.SetTile(tileStatus);
 		StartCoroutine(InGameAnimationManager.Instance.MoveAnimation(destinationTile, destinationTile.GetTileVector()));
 	}
-
+	
+	private void SetMoveTile(TileStatus tileStatus){
+		tileStatus.MoveTime = mMovingCount;
+		mMovingCount ++;
+		Debug.Log ("Moving Count = " + mMovingCount.ToString());
+	}
 	private bool CheckBlowUpTiles(BlownUpStatus [,] blownUpStatus) {
 		int i, j, k;
 		bool isBlown = false;
 		int serialCount = 0;
 		TileTypeManager.TileColor startColor = mTiles[0,0].Status.Color;
+		
 		//Right
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			serialCount = 0;
@@ -186,11 +187,13 @@ public class InGameLogicManager : MonoBehaviour {
 				if(serialCount == BLOW_MINIMUM_COUNT){
 					for(k = 1; k < BLOW_MINIMUM_COUNT; k++) {
 						blownUpStatus[i,j-k].Horizontal = true;
+						blownUpStatus[i,j-k].Shape = BlownUpStatus.EffectShape.NONE;
 					}
 					isBlown = true;
 				}
 				if(serialCount >= BLOW_MINIMUM_COUNT){
 					blownUpStatus[i,j].Horizontal = true;
+					blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.NONE;
 				}
 			}
 		}
@@ -211,11 +214,13 @@ public class InGameLogicManager : MonoBehaviour {
 				if(serialCount == BLOW_MINIMUM_COUNT){
 					for(k = 1; k < BLOW_MINIMUM_COUNT; k++) {
 						blownUpStatus[i-k,j].Vertical = true;
+						blownUpStatus[i-k,j].Shape = BlownUpStatus.EffectShape.NONE;
 					}
 					isBlown = true;
 				}
 				if(serialCount >= BLOW_MINIMUM_COUNT){
 					blownUpStatus[i,j].Vertical = true;
+					blownUpStatus[i,j].Shape = BlownUpStatus.EffectShape.NONE;
 				}
 			}
 		}
@@ -281,33 +286,75 @@ public class InGameLogicManager : MonoBehaviour {
 				}
 			}
 		}
+		
+		//None
 		return isBlown;
 	}
+	private int[] SearchSameShape(BlownUpStatus[,] blownUpStatus,int start_row,int start_col){
+		BlownUpStatus.EffectShape shape = blownUpStatus[start_row,start_col].Shape;
+		Queue<int[]> q = new Queue<int[]>();
+		int[] maxPath = new int[2];
+		int maxMovingTime = -1;
+		q.Enqueue((new int[2] {start_row,start_col}));
+		int[] now;
+		int[,] index = new int[4,2] {{0,1},{0,-1},{1,0},{-1,0}};
+		int start,end;
+		while(q.Count != 0){
+			now = q.Dequeue();
+			tilesDestroyed[now[0],now[1]] = true;
+			if(mTiles[now[0],now[1]].Status.MoveTime > maxMovingTime){
+				maxMovingTime = mTiles[now[0],now[1]].Status.MoveTime;
+				maxPath[0] = now[0];
+				maxPath[1] = now[1];
+			}
+			start = blownUpStatus[now[0],now[1]].Horizontal? 0:2;
+			end = blownUpStatus[now[0],now[1]].Vertical? 4:2;
+			for(int i=start;i<end;i++){
+				if(SearchSameShapeIs(blownUpStatus,now[0]+index[i,0],now[1]+index[i,1],shape) && !checkToDestroyed[now[0]+index[i,0],now[1]+index[i,1]]){
+					checkToDestroyed[now[0]+index[i,0],now[1]+index[i,1]] = true;
+					q.Enqueue((new int[2] {now[0]+index[i,0],now[1]+index[i,1]}));
+				}
+			}
+		}
+		return maxPath;
+	}
+	private bool SearchSameShapeIs(BlownUpStatus[,] blownUpStatus,int now_row,int now_col,BlownUpStatus.EffectShape shape){
+		if(now_row < 0 || now_row >= MAX_ROW_COUNT || now_col < 0 || now_col >=MAX_COL_COUNT) return false;
+		if(blownUpStatus[now_row, now_col].Shape != shape) return false;
+		return true;
+	}
 	
+	bool[,] checkToDestroyed;
+	bool[,] tilesDestroyed;
 	private bool BlowUpTiles() {
 		int i, j;
 		BlownUpStatus[,] blownUpStatus = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
 		BlownUpStatus.Construct(blownUpStatus);
 		
-		bool[,] tilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
-		
+		checkToDestroyed = new bool[MAX_ROW_COUNT,MAX_COL_COUNT];
+		tilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
 		if(!CheckBlowUpTiles(blownUpStatus)) return false;
-		
-		// delete 
+		// delete
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				// add
-				if(blownUpStatus[i,j].IsBlownUp()) {
-					mTiles[i,j].Status.CountToDestroy--;
-					if(mTiles[i,j].Status.CountToDestroy <= 0) {
-						//Tile Destroyed :: give exp, money and special effects
-						tilesDestroyed[i,j] = true;
+				if(!checkToDestroyed[i,j] && blownUpStatus[i,j].IsBlownUp()){
+					checkToDestroyed[i,j] = true;
+					
+					if(blownUpStatus[i,j].Shape == BlownUpStatus.EffectShape.NONE){
+						mTiles[i,j].Status.CountToDestroy--;
+						if(mTiles[i,j].Status.CountToDestroy <= 0) {
+							//Tile Destroyed :: give exp, money and special effects
+							tilesDestroyed[i,j] = true;
+						}
+					}
+					else{
+						int[] notDestroyedTilePath = SearchSameShape(blownUpStatus,i,j);
+						tilesDestroyed[notDestroyedTilePath[0], notDestroyedTilePath[1]] = false;
 					}
 				}
 			}
 		}
-			
-		
 		int row;
 		for(j=0;j<MAX_COL_COUNT;j++) {
 			Queue<int> q = new Queue<int>();
@@ -341,7 +388,7 @@ public class InGameLogicManager : MonoBehaviour {
 					mTiles[row, j].SetPosition(new Vector3(topTilePosition.x, topTilePosition.y+TileScript.tileSize, 0));
 				}
 				mTiles[row, j].SetTile(new TileStatus());
-				
+				SetMoveTile(mTiles[row,j].Status);
 				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
 			}
 		}
@@ -369,7 +416,6 @@ public class InGameLogicManager : MonoBehaviour {
 					if(i != MAX_ROW_COUNT-1) EnemyMove(i,j);
 					else EnemyAttack(i,j);
 				}
-				
 			}
 		}
 	}
@@ -393,7 +439,6 @@ public class InGameLogicManager : MonoBehaviour {
 	
 	private void EnemyAttack(int row, int col) {
 		//TODO : enemy wizard attacks skill gauge
-		
 		mTiles[row,col].Status.TurnLeftAttack--;
 		if(mTiles[row,col].Status.TurnLeftAttack <= 0) {
 			mTiles[row,col].Status.AttackTurnReset();
@@ -406,8 +451,9 @@ public class InGameLogicManager : MonoBehaviour {
 	private void TurnEnd() {
 		mIsSwapEnable = true;
 		if(!mIsBlownThisTurn) return; //Turn is not proceeded. (irregular swap)
-		
 		mTurn ++;
 		InGameUIManager.Instance.UpdateTurn(mTurn);
 	}
 }
+
+		

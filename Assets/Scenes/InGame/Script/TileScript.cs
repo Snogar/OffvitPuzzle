@@ -33,7 +33,6 @@ public class TileScript : MonoBehaviour {
 		
 		return true;
 	}
-	
 	public Vector3 GetTileVector() {
 		return GetTileVectorWithRowCol(mRow, mCol);
 	}

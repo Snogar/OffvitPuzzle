@@ -5,7 +5,6 @@ public class TileStatus {
 	private int mTurnLeftAttack;
 	private TileTypeManager.TileType mType;
 	private TileTypeManager.TileColor mColor;
-	
 	private int mMoveTime; // moving latest.
 	
 	public TileStatus() {
@@ -15,7 +14,6 @@ public class TileStatus {
 		mMovementSpeed = TileTypeManager.Instance.GetMovementSpeed(mType);
 		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
 		mMoveTime = 0;
-		
 		mTurnLeftAttack = 1;
 	}
 	public int MoveTime {
