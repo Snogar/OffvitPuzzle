@@ -14,6 +14,9 @@ public class InGameLogicManager : MonoBehaviour {
 	private int mTurn;
 	private int mMovingCount;
 	
+	private bool[,] mCheckToDestroyed;
+	private bool[,] mTilesDestroyed;
+	
 	private static InGameLogicManager instance;
 	public static InGameLogicManager Instance {
 		get { return instance; }
@@ -247,6 +250,12 @@ public class InGameLogicManager : MonoBehaviour {
 		int[,] L3Index = new int[5,2] {{0, 0}, {0,  1}, {0,  2}, {-1, 0}, {-2, 0}};
 		int[,] L4Index = new int[5,2] {{0, 0}, {0,  1}, {0,  2}, {1,  0}, {2,  0}};
 		
+		int[,] T1Index = new int[5,2] {{0, 0}, {0,  1}, {0, -1}, {1,  0}, {2,  0}};
+		int[,] T2Index = new int[5,2] {{0, 0}, {0,  1}, {0, -1}, {-1, 0}, {-2, 0}};
+		int[,] T3Index = new int[5,2] {{0, 0}, {0, -1}, {0, -2}, {-1, 0}, {1,  0}};
+		int[,] T4Index = new int[5,2] {{0, 0}, {0,  1}, {0,  2}, {-1, 0}, {1,  0}};
+		
+		int[,] plusIndex = new int[5,2] {{0, 0}, {0,  1}, {0,  -1}, {-1, 0}, {1,  0}};
 		//Giyeok
 		for(i=0;i<MAX_ROW_COUNT;i++){
 			for(j=0;j<MAX_COL_COUNT;j++){
@@ -263,9 +272,31 @@ public class InGameLogicManager : MonoBehaviour {
 				if(TileScript.HasSameColor(mTiles, i, j, L3Index)){
 					BlownUpStatus.SetShape(blownUpStatus, i, j, L3Index, BlownUpStatus.EffectShape.L);
 				}
-				//fourth Giyeok
+				//fourth Giyeok  
 				if(TileScript.HasSameColor(mTiles, i, j, L4Index)){
 					BlownUpStatus.SetShape(blownUpStatus, i, j, L4Index, BlownUpStatus.EffectShape.L);
+				}
+				
+				//first T-shape
+				if(TileScript.HasSameColor(mTiles, i, j, T1Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, T1Index, BlownUpStatus.EffectShape.L);
+				}
+				//second T-shape
+				if(TileScript.HasSameColor(mTiles, i, j, T2Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, T2Index, BlownUpStatus.EffectShape.L);
+				}
+				//third T-shape
+				if(TileScript.HasSameColor(mTiles, i, j, T3Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, T3Index, BlownUpStatus.EffectShape.L);
+				}
+				//fourth T-shape
+				if(TileScript.HasSameColor(mTiles, i, j, T4Index)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, T4Index, BlownUpStatus.EffectShape.L);
+				}
+				
+				//plus-shpae
+				if(TileScript.HasSameColor(mTiles, i, j, plusIndex)){
+					BlownUpStatus.SetShape(blownUpStatus, i, j, plusIndex, BlownUpStatus.EffectShape.L);
 				}
 			}
 		}
@@ -293,7 +324,7 @@ public class InGameLogicManager : MonoBehaviour {
 	private int[] SearchSameShape(BlownUpStatus[,] blownUpStatus,int start_row,int start_col){
 		BlownUpStatus.EffectShape shape = blownUpStatus[start_row,start_col].Shape;
 		Queue<int[]> q = new Queue<int[]>();
-		int[] maxPath = new int[2];
+		int[] maxPath = new int[2] {-1,-1};
 		int maxMovingTime = -1;
 		q.Enqueue((new int[2] {start_row,start_col}));
 		int[] now;
@@ -301,17 +332,19 @@ public class InGameLogicManager : MonoBehaviour {
 		int start,end;
 		while(q.Count != 0){
 			now = q.Dequeue();
-			tilesDestroyed[now[0],now[1]] = true;
+			mTilesDestroyed[now[0],now[1]] = true;
 			if(mTiles[now[0],now[1]].Status.MoveTime > maxMovingTime){
-				maxMovingTime = mTiles[now[0],now[1]].Status.MoveTime;
-				maxPath[0] = now[0];
-				maxPath[1] = now[1];
+				if(mTiles[now[0],now[1]].Status.CountToDestroy == 1){
+					maxMovingTime = mTiles[now[0],now[1]].Status.MoveTime;
+					maxPath[0] = now[0];
+					maxPath[1] = now[1];
+				}
 			}
 			start = blownUpStatus[now[0],now[1]].Horizontal? 0:2;
 			end = blownUpStatus[now[0],now[1]].Vertical? 4:2;
 			for(int i=start;i<end;i++){
-				if(SearchSameShapeIs(blownUpStatus,now[0]+index[i,0],now[1]+index[i,1],shape) && !checkToDestroyed[now[0]+index[i,0],now[1]+index[i,1]]){
-					checkToDestroyed[now[0]+index[i,0],now[1]+index[i,1]] = true;
+				if(SearchSameShapeIs(blownUpStatus,now[0]+index[i,0],now[1]+index[i,1],shape) && !mCheckToDestroyed[now[0]+index[i,0],now[1]+index[i,1]]){
+					mCheckToDestroyed[now[0]+index[i,0],now[1]+index[i,1]] = true;
 					q.Enqueue((new int[2] {now[0]+index[i,0],now[1]+index[i,1]}));
 				}
 			}
@@ -324,42 +357,87 @@ public class InGameLogicManager : MonoBehaviour {
 		return true;
 	}
 	
-	bool[,] checkToDestroyed;
-	bool[,] tilesDestroyed;
 	private bool BlowUpTiles() {
 		int i, j;
 		BlownUpStatus[,] blownUpStatus = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
 		BlownUpStatus.Construct(blownUpStatus);
 		
-		checkToDestroyed = new bool[MAX_ROW_COUNT,MAX_COL_COUNT];
-		tilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
+		mCheckToDestroyed = new bool[MAX_ROW_COUNT,MAX_COL_COUNT];
+		mTilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
 		if(!CheckBlowUpTiles(blownUpStatus)) return false;
 		// delete
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				// add
-				if(!checkToDestroyed[i,j] && blownUpStatus[i,j].IsBlownUp()){
-					checkToDestroyed[i,j] = true;
+				if(!mCheckToDestroyed[i,j] && blownUpStatus[i,j].IsBlownUp()){
+					mCheckToDestroyed[i,j] = true;
 					
 					if(blownUpStatus[i,j].Shape == BlownUpStatus.EffectShape.NONE){
 						mTiles[i,j].Status.CountToDestroy--;
 						if(mTiles[i,j].Status.CountToDestroy <= 0) {
 							//Tile Destroyed :: give exp, money and special effects
-							tilesDestroyed[i,j] = true;
+							mTilesDestroyed[i,j] = true;
 						}
 					}
 					else{
 						int[] notDestroyedTilePath = SearchSameShape(blownUpStatus,i,j);
-						tilesDestroyed[notDestroyedTilePath[0], notDestroyedTilePath[1]] = false;
+						if(notDestroyedTilePath[0] != -1 && notDestroyedTilePath[1] != -1){
+							mTilesDestroyed[notDestroyedTilePath[0], notDestroyedTilePath[1]] = false;
+							TileStatus nowChangeStatus = mTiles[notDestroyedTilePath[0],notDestroyedTilePath[1]].Status;
+							if(blownUpStatus[i,j].Shape == BlownUpStatus.EffectShape.FOUR){
+								nowChangeStatus.Type = TileTypeManager.TileType.HEAL;
+							}
+							else if(blownUpStatus[i,j].Shape == BlownUpStatus.EffectShape.L){
+								nowChangeStatus.Type = TileTypeManager.TileType.CROSS;
+							}
+							else if(blownUpStatus[i,j].Shape == BlownUpStatus.EffectShape.FIVE){
+								nowChangeStatus.Type = TileTypeManager.TileType.SPECIAL;
+							}
+							mTiles[notDestroyedTilePath[0],notDestroyedTilePath[1]].SetTile(nowChangeStatus);
+						}
 					}
 				}
 			}
 		}
+		
+		//Cross & heal & sepcial Effect.
+		bool[,] isAlreadyBomb = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
+		bool isStop = true;
+		while(isStop){
+			isStop = false;
+			for(i=0;i<MAX_ROW_COUNT;i++){
+				for(j=0;j<MAX_COL_COUNT;j++){
+					if(!isAlreadyBomb[i,j] && mTilesDestroyed[i,j]){
+						isAlreadyBomb[i,j] = true;
+						if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.HEAL){
+							// Add Heal.
+							UserManager.Instance.decreaseHP(-3);
+							InGameUIManager.Instance.UpdateHP(UserManager.Instance.HP);
+						}
+						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.CROSS){
+							int k;
+							for(k=0;k<MAX_COL_COUNT;k++){
+								mTilesDestroyed[i,k] = true;
+							}
+							for(k=0;k<MAX_ROW_COUNT;k++){
+								mTilesDestroyed[k,j] = true;
+							}
+						}
+						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.SPECIAL){
+							// Special Effect.
+						}
+						isStop = true;
+					}
+				}
+			}
+		}
+		
+		//Real delete
 		int row;
 		for(j=0;j<MAX_COL_COUNT;j++) {
 			Queue<int> q = new Queue<int>();
 			for(i=MAX_ROW_COUNT-1;i>=0;i--) {
-				if(tilesDestroyed[i, j]) {
+				if(mTilesDestroyed[i, j]) {
 					q.Enqueue(i);
 				}else {
 					if(q.Count > 0) {
