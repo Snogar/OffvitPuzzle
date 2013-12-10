@@ -1,6 +1,8 @@
 using UnityEngine;
 
 public class TileStatus {
+	private static int mMovingCount = 0;
+	
 	private int mCountToDestroy, mMovementSpeed, mAttackSpeed;
 	private int mTurnLeftAttack;
 	private TileTypeManager.TileType mType;
@@ -13,13 +15,28 @@ public class TileStatus {
 		mCountToDestroy = TileTypeManager.Instance.GetCountToDestroy(mType);
 		mMovementSpeed = TileTypeManager.Instance.GetMovementSpeed(mType);
 		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
-		mMoveTime = 0;
 		mTurnLeftAttack = 1;
+		
+		SetMoveTime();
 	}
+	
+	public TileStatus(TileTypeManager.TileType type, TileTypeManager.TileColor color) {
+		mType = type;
+		mColor = color;
+		mCountToDestroy = TileTypeManager.Instance.GetCountToDestroy(mType);
+		mMovementSpeed = TileTypeManager.Instance.GetMovementSpeed(mType);
+		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
+		mTurnLeftAttack = 1;
+		
+		SetMoveTime();
+	}
+	
+	
 	public int MoveTime {
 		get { return mMoveTime; }
 		set { mMoveTime = value; }
 	}
+	
 	public TileTypeManager.TileType Type {
 		get { return mType; }
 		set { mType = value; }
@@ -66,5 +83,9 @@ public class TileStatus {
 	
 	public void AttackTurnReset() {
 		mTurnLeftAttack = mAttackSpeed;
+	}
+	
+	public void SetMoveTime() {
+		mMoveTime = mMovingCount++;
 	}
 }

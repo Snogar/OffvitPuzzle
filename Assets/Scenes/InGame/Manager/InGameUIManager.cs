@@ -4,8 +4,7 @@ using System.Collections.Generic;
 
 public class InGameUIManager : MonoBehaviour 
 {
-	private UILabel mHP;
-	private UILabel mTurn;
+	private UILabel mHPLabel, mMPLabel;
 	
 	private static InGameUIManager instance;
 	public static InGameUIManager Instance {
@@ -14,22 +13,20 @@ public class InGameUIManager : MonoBehaviour
 	private void Awake() {
 		instance = this;
 		
-		mHP = transform.Find("HP").GetComponent<UILabel>();
-		mTurn = transform.Find("Turn").GetComponent<UILabel>();
-	}
-	
-	private void Start () {
-	}
-
-	private void Update () {
+		mHPLabel = transform.Find("GaugeUIPanel/HP").GetComponent<UILabel>();
+		mMPLabel = transform.Find("GaugeUIPanel/MP").GetComponent<UILabel>();
 	}
 	
 	public void UpdateHP(int hp) {
-		mHP.text = "HP : " + hp;
+		mHPLabel.text = "HP : " + hp;
 	}
 	
 	public void UpdateTurn(int turn) {
-		mTurn.text = "TURN : " + turn;
+		//mTurn.text = "TURN : " + turn;
+	}
+	
+	public void UpdateMP(int mp) {
+		mMPLabel.text = "MP : " + mp;
 	}
 }
 

@@ -79,10 +79,12 @@ public class TileScript : MonoBehaviour {
 		mStatus = status;
 		mSprite.spriteName = TileTypeManager.Instance.SpriteName(status.Type, status.Color);
 		if(TileTypeManager.Instance.IsEnemyType(status.Type)) {
-			gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, -1);
+			//gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, -1);
+			mSprite.depth = 1;
 		}
 		else {
-			gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, 0);
+			mSprite.depth = 0;
+			//gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, 0);
 		}
 		
 		gameObject.transform.localScale = TileTypeManager.Instance.GetTileScale(status.Type);

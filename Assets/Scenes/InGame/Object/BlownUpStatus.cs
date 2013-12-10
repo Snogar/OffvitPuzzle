@@ -4,29 +4,29 @@ using System.Collections.Generic;
 
 public class BlownUpStatus
 {
-	public bool Vertical;
-	public bool Horizontal;
+	public bool mVertical;
+	public bool mHorizontal;
 	public enum EffectShape{
 		NONE,
 		FIVE,
 		L,
 		FOUR
 	};
-	public EffectShape Shape;
+	public EffectShape mShape;
 	
 	public BlownUpStatus()
 	{
-		this.Vertical = false;
-		this.Horizontal = false;
-		this.Shape = EffectShape.NONE;
+		this.mVertical = false;
+		this.mHorizontal = false;
+		this.mShape = EffectShape.NONE;
 	}
 	
 	public bool IsBlownUp(){
-		return Vertical || Horizontal;
+		return mVertical || mHorizontal;
 	}
 	
 	public bool IsSameEffectShape(EffectShape centerShape){
-		if(this.Shape == centerShape || this.Shape == EffectShape.NONE){
+		if(this.mShape == centerShape || this.mShape == EffectShape.NONE){
 			return true;
 		}
 		else return false;
@@ -57,7 +57,7 @@ public class BlownUpStatus
 			int currentRow = pivotRow + indexList[i, 0];
 			int currentCol = pivotCol + indexList[i, 1];
 			
-			blownUpStatus[currentRow, currentCol].Shape = shape;
+			blownUpStatus[currentRow, currentCol].mShape = shape;
 		}
 	}
 }
