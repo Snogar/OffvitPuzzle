@@ -396,7 +396,7 @@ public class InGameLogicManager : MonoBehaviour {
 		
 		//Cross & heal & sepcial Effect.
 		bool[,] isAlreadyBomb = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
-		bool isStop = true;
+		bool isStop = false;
 		while(!isStop){
 			isStop = true;
 			for(i=0;i<MAX_ROW_COUNT;i++){
@@ -414,7 +414,7 @@ public class InGameLogicManager : MonoBehaviour {
 								if(mTiles[i,k].IsBlowable) mTilesDestroyed[i,k] = true;
 							}
 							for(k=0;k<MAX_ROW_COUNT;k++){
-								if(mTiles[i,k].IsBlowable) mTilesDestroyed[k,j] = true;
+								if(mTiles[k,j].IsBlowable) mTilesDestroyed[k,j] = true;
 							}
 						}
 						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.SPECIAL){
