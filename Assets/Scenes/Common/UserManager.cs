@@ -35,8 +35,8 @@ public class UserManager {
 		return mHP;
 	}
 
-	public int setMP(int baseMP, int blownTileCount) {
-		mMP = baseMP + MP_INCREASING_CONSTANT * blownTileCount;
+	public int setMP(int mp) {
+		mMP = mp;
 		return mMP;
 	}
 }

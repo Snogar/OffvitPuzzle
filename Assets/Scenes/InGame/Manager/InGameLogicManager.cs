@@ -6,6 +6,7 @@ public class InGameLogicManager : MonoBehaviour {
 	private const int MAX_ROW_COUNT = 8;
 	private const int MAX_COL_COUNT = 8;
 	private const int BLOW_MINIMUM_COUNT = 3;
+	private const int MP_INCREASING_CONSTANT = 3;
 	
 	private TileScript[,] mTiles = new TileScript[MAX_ROW_COUNT, MAX_COL_COUNT];
 	private bool mIsSwapEnable, mIsBlownThisTurn, mIsReSwapNeeded, mIsEnemyActionDone;
@@ -471,7 +472,7 @@ public class InGameLogicManager : MonoBehaviour {
 				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
 			}
 		}
-		UserManager.Instance.setMP(mBaseMP, mBlownTileCount);
+		UserManager.Instance.setMP(mBaseMP + MP_INCREASING_CONSTANT * mBlownTileCount);
 		InGameUIManager.Instance.UpdateMP(UserManager.Instance.MP);
 		return true;
 	}

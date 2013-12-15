@@ -12,7 +12,7 @@ public class TileScript : MonoBehaviour {
 	public TileStatus mStatus;
 	
 	public static Vector3 GetTileVectorWithRowCol(int row, int col) {
-		return new Vector3(col*tileSize - tileSize*3.5f, -row*tileSize + tileSize*5, 0);
+		return new Vector3(col*tileSize - tileSize*3.5f, -row*tileSize + tileSize*4.5f, 0);
 	}
 	
 	public static bool HasSameColor(TileScript[,] mTiles, int pivotRow, int pivotCol, int[,] indexList)
