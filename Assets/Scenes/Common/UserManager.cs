@@ -3,10 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class UserManager {	
+	private const int MP_INCREASING_CONSTANT = 3;
 	private int mHP;
+	private int mMP;
 	
 	public UserManager() {
 		mHP = 50;
+		mMP = 0;
 	}
 	
 	private static UserManager instance;
@@ -23,8 +26,17 @@ public class UserManager {
 		get { return mHP; }
 	}
 	
+	public int MP {
+		get { return mMP; }
+	}
+	
 	public int decreaseHP(int decreaseAmount) {
 		mHP -= decreaseAmount;
 		return mHP;
+	}
+
+	public int setMP(int baseMP, int blownTileCount) {
+		mMP = baseMP + MP_INCREASING_CONSTANT * blownTileCount;
+		return mMP;
 	}
 }

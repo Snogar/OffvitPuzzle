@@ -12,6 +12,8 @@ public class InGameLogicManager : MonoBehaviour {
 	private TileScript mClickedTile;
 	private TileScript[] mLastSwappedTiles = new TileScript[2];
 	private int mTurn;
+	private int mBlownTileCount;
+	private int mBaseMP;
 	
 	private bool[,] mCheckToDestroyed;
 	private bool[,] mTilesDestroyed;
@@ -57,8 +59,11 @@ public class InGameLogicManager : MonoBehaviour {
 		mIsEnemyActionDone = false;
 		mIsBlownThisTurn = false;
 		mTurn = 0;
+		mBlownTileCount = 0;
+		mBaseMP = 0;
 		
 		InGameUIManager.Instance.UpdateHP(UserManager.Instance.HP);
+		InGameUIManager.Instance.UpdateMP(UserManager.Instance.MP);
 		InGameUIManager.Instance.UpdateTurn(mTurn);
 	}
 	
@@ -124,6 +129,7 @@ public class InGameLogicManager : MonoBehaviour {
 			SwapTiles(mClickedTile, tile);
 			mIsReSwapNeeded = true;
 			mIsSwapEnable = false;
+			mBaseMP = UserManager.Instance.MP;
 			mIsEnemyActionDone = false;
 			mIsBlownThisTurn = false;
 			
@@ -377,6 +383,7 @@ public class InGameLogicManager : MonoBehaviour {
 							TileStatus nowStatus = mTiles[notDestroyedTilePath[0],notDestroyedTilePath[1]].Status;
 							TileTypeManager.TileType madeSpecialType = TileTypeManager.TileType.NORMAL;
 							mTilesDestroyed[notDestroyedTilePath[0], notDestroyedTilePath[1]] = false;
+							mBlownTileCount++;
 							
 							if(blownUpStatus[i,j].mShape == BlownUpStatus.EffectShape.FOUR){
 								madeSpecialType = TileTypeManager.TileType.HEAL;
@@ -433,6 +440,7 @@ public class InGameLogicManager : MonoBehaviour {
 			for(i=MAX_ROW_COUNT-1;i>=0;i--) {
 				if(mTilesDestroyed[i, j]) {
 					q.Enqueue(i);
+					mBlownTileCount++;
 				}else {
 					if(q.Count > 0) {
 						row = q.Dequeue();
@@ -463,6 +471,8 @@ public class InGameLogicManager : MonoBehaviour {
 				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
 			}
 		}
+		UserManager.Instance.setMP(mBaseMP, mBlownTileCount);
+		InGameUIManager.Instance.UpdateMP(UserManager.Instance.MP);
 		return true;
 	}
 	
@@ -522,6 +532,7 @@ public class InGameLogicManager : MonoBehaviour {
 	private void TurnEnd() {
 		mIsSwapEnable = true;
 		if(!mIsBlownThisTurn) return; //Turn is not proceeded. (irregular swap)
+		mBlownTileCount = 0;
 		mTurn ++;
 		InGameUIManager.Instance.UpdateTurn(mTurn);
 	}
