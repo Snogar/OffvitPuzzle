@@ -75,7 +75,6 @@ public class TileStatus {
 		else if(randomSeed <= 5) return TileTypeManager.TileType.ENEMY_GIANT;
 		else if(randomSeed <= 7) return TileTypeManager.TileType.ENEMY_ASSASSIN;
 		else if(randomSeed <= 9) return TileTypeManager.TileType.ENEMY_WIZARD;
-		else if(randomSeed <= 30) return TileTypeManager.TileType.SPECIAL;
 		return TileTypeManager.TileType.NORMAL;
 	}
 	private TileTypeManager.TileColor ColorGenerate() {
