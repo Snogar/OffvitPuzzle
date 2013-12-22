@@ -355,7 +355,16 @@ public class InGameLogicManager : MonoBehaviour {
 		if(blownUpStatus[now_row, now_col].mShape != shape) return false;
 		return true;
 	}
-	
+	private void MakeBubble(){
+		int i,j;
+		for(i=0;i<MAX_ROW_COUNT;i++){
+			for(j=0;j<MAX_COL_COUNT;j++){
+				if(TileTypeManager.Instance.IsEnemyType(mTiles[i,j].Status.Type)){
+					mTiles[i,j].Status.SetBubbleCount();
+				}
+			}
+		}
+	}
 	private bool BlowUpTiles() {
 		int i, j;
 		BlownUpStatus[,] blownUpStatus = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
@@ -411,29 +420,32 @@ public class InGameLogicManager : MonoBehaviour {
 				for(j=0;j<MAX_COL_COUNT;j++){
 					if(!isAlreadyBomb[i,j] && mTilesDestroyed[i,j]){
 						isAlreadyBomb[i,j] = true;
-						if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.HEAL){
+						if(mTiles[i,j].Status.Type == TileTypeManager.TileType.HEAL){
 							// Add Heal.
 							UserManager.Instance.decreaseHP(-3);
 							InGameUIManager.Instance.UpdateHP(UserManager.Instance.HP);
 						}
-						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.CROSS){
+						else if(mTiles[i,j].Status.Type == TileTypeManager.TileType.CROSS){
 							int k;
 							for(k=0;k<MAX_COL_COUNT;k++){
 								if(mTiles[i,k].IsBlowable) mTilesDestroyed[i,k] = true;
 							}
-							for(k=0;k<MAX_ROW_COUNT;k++){
-								if(mTiles[k,j].IsBlowable) mTilesDestroyed[k,j] = true;
-							}
 						}
-						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.SPECIAL){
+						else if(mTiles[i,j].Status.Type == TileTypeManager.TileType.SPECIAL){
 							// Special Effect.
+							// Bubble Effect
+							switch(mTiles[i,j].Status.Color){
+								case TileTypeManager.TileColor.BLUE:
+									MakeBubble();
+									break;
+							}
 						}
 						isStop = false;
 					}
 				}
 			}
 		}
-		
+
 		//Real delete
 		int row;
 		for(j=0;j<MAX_COL_COUNT;j++) {
@@ -482,10 +494,12 @@ public class InGameLogicManager : MonoBehaviour {
 		
 		mIsEnemyActionDone = true;
 		if(!mIsBlownThisTurn) return;
-		
+
+
 		for(i=MAX_ROW_COUNT-1;i>=0;i--) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				if(!TileTypeManager.Instance.IsEnemyType(mTiles[i,j].Status.Type)) continue;
+				if(mTiles[i,j].Status.DecBubbleCount()) continue;
 				if(mTiles[i, j].Status.Type == TileTypeManager.TileType.ENEMY_ARCHER) {
 					if(i >= TileTypeManager.ARCHER_ATTACK_ROW - 1) EnemyAttack(i,j);
 					else EnemyMove(i,j);

@@ -8,6 +8,7 @@ public class TileStatus {
 	private TileTypeManager.TileType mType;
 	private TileTypeManager.TileColor mColor;
 	private int mMoveTime; // moving latest.
+	private int mBubbleCount; 
 	
 	public TileStatus() {
 		mType = TypeGenerate();
@@ -16,18 +17,18 @@ public class TileStatus {
 		mMovementSpeed = TileTypeManager.Instance.GetMovementSpeed(mType);
 		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
 		mTurnLeftAttack = 1;
-		
+		mBubbleCount = 0;
 		SetMoveTime();
 	}
 	
-	public TileStatus(TileTypeManager.TileType type, TileTypeManager.TileColor color) {
+	public TileStatus(TileTypeManager.TileType type, TileTypeManager.TileColor color){
 		mType = type;
 		mColor = color;
 		mCountToDestroy = TileTypeManager.Instance.GetCountToDestroy(mType);
 		mMovementSpeed = TileTypeManager.Instance.GetMovementSpeed(mType);
 		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
 		mTurnLeftAttack = 1;
-		
+		mBubbleCount = 0;
 		SetMoveTime();
 	}
 	
@@ -66,7 +67,6 @@ public class TileStatus {
 		get { return mTurnLeftAttack; }
 		set { mTurnLeftAttack = value; }
 	}
-	
 	private TileTypeManager.TileType TypeGenerate() {
 		//TODO : Probability Modification
 		int randomSeed = Random.Range(0, 100);
@@ -75,16 +75,25 @@ public class TileStatus {
 		else if(randomSeed <= 5) return TileTypeManager.TileType.ENEMY_GIANT;
 		else if(randomSeed <= 7) return TileTypeManager.TileType.ENEMY_ASSASSIN;
 		else if(randomSeed <= 9) return TileTypeManager.TileType.ENEMY_WIZARD;
+		else if(randomSeed <= 30) return TileTypeManager.TileType.SPECIAL;
 		return TileTypeManager.TileType.NORMAL;
 	}
 	private TileTypeManager.TileColor ColorGenerate() {
 		return (TileTypeManager.TileColor)Random.Range(0, (int)(TileTypeManager.TileColor.MAX_COUNT));
 	}
-	
 	public void AttackTurnReset() {
 		mTurnLeftAttack = mAttackSpeed;
 	}
-	
+	public void SetBubbleCount(){
+		mBubbleCount = 2;
+	}
+	public bool DecBubbleCount(){
+		if(mBubbleCount > 0){
+			mBubbleCount --;
+			return true;
+		}
+		return false;
+	}
 	public void SetMoveTime() {
 		mMoveTime = mMovingCount++;
 	}
