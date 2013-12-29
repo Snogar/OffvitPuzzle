@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,6 +8,7 @@ public class InGameLogicManager : MonoBehaviour {
 	private const int MAX_COL_COUNT = 8;
 	private const int BLOW_MINIMUM_COUNT = 3;
 	private const int MP_INCREASING_CONSTANT = 3;
+	private const int MAX_MP = 400;
 	
 	private TileScript[,] mTiles = new TileScript[MAX_ROW_COUNT, MAX_COL_COUNT];
 	private bool mIsSwapEnable, mIsBlownThisTurn, mIsReSwapNeeded, mIsEnemyActionDone;
@@ -17,8 +19,26 @@ public class InGameLogicManager : MonoBehaviour {
 	private int mBaseMP;
 	
 	private bool[,] mCheckToDestroyed;
-	private bool[,] mTilesDestroyed;
-	
+
+	private static int[,] LOC_ALL = new int[225,2] {
+		{-7, -7}, {-7, -6}, {-7, -5}, {-7, -4}, {-7, -3}, {-7, -2}, {-7, -1}, {-7, 0}, {-7, 1}, {-7, 2}, {-7, 3}, {-7, 4}, {-7, 5}, {-7, 6}, {-7, 7},
+		{-6, -7}, {-6, -6}, {-6, -5}, {-6, -4}, {-6, -3}, {-6, -2}, {-6, -1}, {-6, 0}, {-6, 1}, {-6, 2}, {-6, 3}, {-6, 4}, {-6, 5}, {-6, 6}, {-6, 7},
+		{-5, -7}, {-5, -6}, {-5, -5}, {-5, -4}, {-5, -3}, {-5, -2}, {-5, -1}, {-5, 0}, {-5, 1}, {-5, 2}, {-5, 3}, {-5, 4}, {-5, 5}, {-5, 6}, {-5, 7},
+		{-4, -7}, {-4, -6}, {-4, -5}, {-4, -4}, {-4, -3}, {-4, -2}, {-4, -1}, {-4, 0}, {-4, 1}, {-4, 2}, {-4, 3}, {-4, 4}, {-4, 5}, {-4, 6}, {-4, 7},
+		{-3, -7}, {-3, -6}, {-3, -5}, {-3, -4}, {-3, -3}, {-3, -2}, {-3, -1}, {-3, 0}, {-3, 1}, {-3, 2}, {-3, 3}, {-3, 4}, {-3, 5}, {-3, 6}, {-3, 7},
+		{-2, -7}, {-2, -6}, {-2, -5}, {-2, -4}, {-2, -3}, {-2, -2}, {-2, -1}, {-2, 0}, {-2, 1}, {-2, 2}, {-2, 3}, {-2, 4}, {-2, 5}, {-2, 6}, {-2, 7},
+		{-1, -7}, {-1, -6}, {-1, -5}, {-1, -4}, {-1, -3}, {-1, -2}, {-1, -1}, {-1, 0}, {-1, 1}, {-1, 2}, {-1, 3}, {-1, 4}, {-1, 5}, {-1, 6}, {-1, 7},
+		{ 0, -7}, { 0, -6}, { 0, -5}, { 0, -4}, { 0, -3}, { 0, -2}, { 0, -1}, { 0, 0}, { 0, 1}, { 0, 2}, { 0, 3}, { 0, 4}, { 0, 5}, { 0, 6}, { 0, 7},
+		{ 1, -7}, { 1, -6}, { 1, -5}, { 1, -4}, { 1, -3}, { 1, -2}, { 1, -1}, { 1, 0}, { 1, 1}, { 1, 2}, { 1, 3}, { 1, 4}, { 1, 5}, { 1, 6}, { 1, 7},
+		{ 2, -7}, { 2, -6}, { 2, -5}, { 2, -4}, { 2, -3}, { 2, -2}, { 2, -1}, { 2, 0}, { 2, 1}, { 2, 2}, { 2, 3}, { 2, 4}, { 2, 5}, { 2, 6}, { 2, 7},
+		{ 3, -7}, { 3, -6}, { 3, -5}, { 3, -4}, { 3, -3}, { 3, -2}, { 3, -1}, { 3, 0}, { 3, 1}, { 3, 2}, { 3, 3}, { 3, 4}, { 3, 5}, { 3, 6}, { 3, 7},
+		{ 4, -7}, { 4, -6}, { 4, -5}, { 4, -4}, { 4, -3}, { 4, -2}, { 4, -1}, { 4, 0}, { 4, 1}, { 4, 2}, { 4, 3}, { 4, 4}, { 4, 5}, { 4, 6}, { 4, 7},
+		{ 5, -7}, { 5, -6}, { 5, -5}, { 5, -4}, { 5, -3}, { 5, -2}, { 5, -1}, { 5, 0}, { 5, 1}, { 5, 2}, { 5, 3}, { 5, 4}, { 5, 5}, { 5, 6}, { 5, 7},
+		{ 6, -7}, { 6, -6}, { 6, -5}, { 6, -4}, { 6, -3}, { 6, -2}, { 6, -1}, { 6, 0}, { 6, 1}, { 6, 2}, { 6, 3}, { 6, 4}, { 6, 5}, { 6, 6}, { 6, 7},
+		{ 7, -7}, { 7, -6}, { 7, -5}, { 7, -4}, { 7, -3}, { 7, -2}, { 7, -1}, { 7, 0}, { 7, 1}, { 7, 2}, { 7, 3}, { 7, 4}, { 7, 5}, { 7, 6}, { 7, 7}
+	};
+	private static int[,] LOC_MANHATTAN_DISTANCE_2 = new int[13,2] {{-2, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2}, {1, -1}, {1, 0}, {1, 1}, {2, 0}};
+
 	private static InGameLogicManager instance;
 	public static InGameLogicManager Instance {
 		get { return instance; }
@@ -331,7 +351,7 @@ public class InGameLogicManager : MonoBehaviour {
 		int start,end;
 		while(q.Count != 0){
 			now = q.Dequeue();
-			mTilesDestroyed[now[0],now[1]] = true;
+			mTiles[now[0],now[1]].Status.Destroyed = true;
 			if(mTiles[now[0],now[1]].Status.MoveTime > maxMovingTime){
 				if(mTiles[now[0],now[1]].Status.CountToDestroy == 1){
 					maxMovingTime = mTiles[now[0],now[1]].Status.MoveTime;
@@ -355,14 +375,34 @@ public class InGameLogicManager : MonoBehaviour {
 		if(blownUpStatus[now_row, now_col].mShape != shape) return false;
 		return true;
 	}
-	private void MakeBubble(){
-		int i,j;
-		for(i=0;i<MAX_ROW_COUNT;i++){
-			for(j=0;j<MAX_COL_COUNT;j++){
-				if(TileTypeManager.Instance.IsEnemyType(mTiles[i,j].Status.Type)){
-					mTiles[i,j].Status.SetBubbleCount();
-				}
-			}
+	private int CalculateMP(int baseMP, int blownTileCount){
+		int newMP = baseMP + MP_INCREASING_CONSTANT * mBlownTileCount;
+		if(newMP >= MAX_MP) return MAX_MP;
+		return newMP;
+	}
+
+	private int MAP<T>(T[,] array, int row, int col, int[,] locations, Predicate<T> filter, Action<T> action){
+		int rowLength = array.GetLength(0);
+		int colLength = array.GetLength(1);
+		int count = 0;
+		for(int i=0;i<locations.GetLength(0);i++){
+			int curRow = row + locations[i, 0];
+			int curCol = col + locations[i, 1];
+			if(!(curRow >= 0 && curRow < rowLength
+			     && curCol >= 0 && curCol < colLength
+			     && filter(array[curRow, curCol]))) continue;
+			count++;
+			action(array[curRow, curCol]);
+		}
+		return count;
+	}
+	private void DamageTile(TileScript tile, int damage) {
+		if(!tile.IsBlowable || tile.Status.Destroyed) return;
+		tile.Status.CountToDestroy-= damage;
+		if(tile.Status.CountToDestroy <= 0) {
+			//Tile Destroyed :: give exp, money and special effects
+			mBlownTileCount++;
+			tile.Status.Destroyed = true;
 		}
 	}
 	private bool BlowUpTiles() {
@@ -370,9 +410,8 @@ public class InGameLogicManager : MonoBehaviour {
 		BlownUpStatus[,] blownUpStatus = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
 		BlownUpStatus.Construct(blownUpStatus);
 		
-		mCheckToDestroyed = new bool[MAX_ROW_COUNT,MAX_COL_COUNT];
-		mTilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
 		if(!CheckBlowUpTiles(blownUpStatus)) return false;
+		mCheckToDestroyed = new bool[MAX_ROW_COUNT,MAX_COL_COUNT];
 		// delete
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
@@ -381,20 +420,17 @@ public class InGameLogicManager : MonoBehaviour {
 					mCheckToDestroyed[i,j] = true;
 					
 					if(blownUpStatus[i,j].mShape == BlownUpStatus.EffectShape.NONE){
-						mTiles[i,j].Status.CountToDestroy--;
-						if(mTiles[i,j].Status.CountToDestroy <= 0) {
-							//Tile Destroyed :: give exp, money and special effects
-							mTilesDestroyed[i,j] = true;
-						}
+						DamageTile(mTiles[i,j], 1);
 					}
 					else{
 						int[] notDestroyedTilePath = SearchSameShape(blownUpStatus,i,j);
 						if(notDestroyedTilePath[0] != -1 && notDestroyedTilePath[1] != -1){
+							DamageTile(mTiles[i,j], 1);
+							//Revive Special Tile
+							mTiles[notDestroyedTilePath[0], notDestroyedTilePath[1]].Status.Destroyed = false;
 							TileStatus nowStatus = mTiles[notDestroyedTilePath[0],notDestroyedTilePath[1]].Status;
 							TileTypeManager.TileType madeSpecialType = TileTypeManager.TileType.NORMAL;
-							mTilesDestroyed[notDestroyedTilePath[0], notDestroyedTilePath[1]] = false;
-							mBlownTileCount++;
-							
+														
 							if(blownUpStatus[i,j].mShape == BlownUpStatus.EffectShape.FOUR){
 								madeSpecialType = TileTypeManager.TileType.HEAL;
 							}
@@ -418,7 +454,7 @@ public class InGameLogicManager : MonoBehaviour {
 			isStop = true;
 			for(i=0;i<MAX_ROW_COUNT;i++){
 				for(j=0;j<MAX_COL_COUNT;j++){
-					if(!isAlreadyBomb[i,j] && mTilesDestroyed[i,j]){
+					if(!isAlreadyBomb[i,j] && mTiles[i,j].Status.Destroyed){
 						isAlreadyBomb[i,j] = true;
 						if(mTiles[i,j].Status.Type == TileTypeManager.TileType.HEAL){
 							// Add Heal.
@@ -428,7 +464,7 @@ public class InGameLogicManager : MonoBehaviour {
 						else if(mTiles[i,j].Status.Type == TileTypeManager.TileType.CROSS){
 							int k;
 							for(k=0;k<MAX_COL_COUNT;k++){
-								if(mTiles[i,k].IsBlowable) mTilesDestroyed[i,k] = true;
+								DamageTile(mTiles[i,k], 1);
 							}
 						}
 						else if(mTiles[i,j].Status.Type == TileTypeManager.TileType.SPECIAL){
@@ -436,7 +472,19 @@ public class InGameLogicManager : MonoBehaviour {
 							// Bubble Effect
 							switch(mTiles[i,j].Status.Color){
 								case TileTypeManager.TileColor.BLUE:
-									MakeBubble();
+									MAP<TileScript>(mTiles, i, j, LOC_ALL, 
+								    	            delegate(TileScript tile) { return TileTypeManager.Instance.IsEnemyType(tile.Status.Type); },
+													delegate(TileScript tile) { tile.Status.SetBubbleCount(); });
+									break;
+								case TileTypeManager.TileColor.WHITE:
+									MAP<TileScript>(mTiles, i, j, LOC_ALL,
+									                delegate(TileScript tile) { return tile.Status.Color == TileTypeManager.TileColor.WHITE; },
+													delegate(TileScript tile) { DamageTile(tile, 1); });
+									break;
+								case TileTypeManager.TileColor.PINK:
+									MAP<TileScript>(mTiles, i, j, LOC_MANHATTAN_DISTANCE_2,
+								                	delegate(TileScript tile) { return true; },
+													delegate(TileScript tile) { DamageTile(tile, 1); });
 									break;
 							}
 						}
@@ -451,9 +499,9 @@ public class InGameLogicManager : MonoBehaviour {
 		for(j=0;j<MAX_COL_COUNT;j++) {
 			Queue<int> q = new Queue<int>();
 			for(i=MAX_ROW_COUNT-1;i>=0;i--) {
-				if(mTilesDestroyed[i, j]) {
+				if(mTiles[i, j].Status.Destroyed) {
+					//mTiles[i, j].Status.Destroyed = false;
 					q.Enqueue(i);
-					mBlownTileCount++;
 				}else {
 					if(q.Count > 0) {
 						row = q.Dequeue();
@@ -484,7 +532,7 @@ public class InGameLogicManager : MonoBehaviour {
 				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
 			}
 		}
-		UserManager.Instance.setMP(mBaseMP + MP_INCREASING_CONSTANT * mBlownTileCount);
+		UserManager.Instance.setMP(CalculateMP(mBaseMP, mBlownTileCount));
 		InGameUIManager.Instance.UpdateMP(UserManager.Instance.MP);
 		return true;
 	}

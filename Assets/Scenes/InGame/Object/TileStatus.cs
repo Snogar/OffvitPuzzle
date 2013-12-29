@@ -8,8 +8,9 @@ public class TileStatus {
 	private TileTypeManager.TileType mType;
 	private TileTypeManager.TileColor mColor;
 	private int mMoveTime; // moving latest.
-	private int mBubbleCount; 
-	
+	private int mBubbleCount;
+	private bool mDestroyed;
+
 	public TileStatus() {
 		mType = TypeGenerate();
 		mColor = ColorGenerate();
@@ -18,6 +19,7 @@ public class TileStatus {
 		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
 		mTurnLeftAttack = 1;
 		mBubbleCount = 0;
+		mDestroyed = false;
 		SetMoveTime();
 	}
 	
@@ -29,6 +31,7 @@ public class TileStatus {
 		mAttackSpeed = TileTypeManager.Instance.GetAttackSpeed(mType);
 		mTurnLeftAttack = 1;
 		mBubbleCount = 0;
+		mDestroyed = false;
 		SetMoveTime();
 	}
 	
@@ -62,7 +65,12 @@ public class TileStatus {
 		get { return mAttackSpeed; }
 		//set { mAttackSpeed = value; }
 	}
-	
+
+	public bool Destroyed {
+		get { return mDestroyed; }
+		set { mDestroyed = value; }
+	}
+
 	public int TurnLeftAttack {
 		get { return mTurnLeftAttack; }
 		set { mTurnLeftAttack = value; }
