@@ -10,6 +10,10 @@ public class TileStatus {
 	private int mMoveTime; // moving latest.
 	private int mBubbleCount;
 	private bool mDestroyed;
+	private bool mFalling;
+	private bool mIsEmpty;
+	private int mFallingCount;
+	private int mStep;
 
 	public TileStatus() {
 		mType = TypeGenerate();
@@ -20,6 +24,10 @@ public class TileStatus {
 		mTurnLeftAttack = 1;
 		mBubbleCount = 0;
 		mDestroyed = false;
+		mFalling = false;
+		mIsEmpty = false;
+		mFallingCount = 0;
+		mStep = 0;
 		SetMoveTime();
 	}
 	
@@ -32,6 +40,10 @@ public class TileStatus {
 		mTurnLeftAttack = 1;
 		mBubbleCount = 0;
 		mDestroyed = false;
+		mFalling = false;
+		mIsEmpty = false;
+		mFallingCount = 0;
+		mStep = 0;
 		SetMoveTime();
 	}
 	
@@ -70,7 +82,19 @@ public class TileStatus {
 		get { return mDestroyed; }
 		set { mDestroyed = value; }
 	}
-
+	public bool Falling {
+		get { return mFalling; }
+		set { mFalling = value;
+			mFallingCount = 0;}
+	}
+	public int FallingCount{
+		get { return mFallingCount; }
+		set { mFallingCount=value;}
+	}
+	public bool IsEmpty{
+		get { return mIsEmpty; }
+		set { mIsEmpty=value;}
+	}
 	public int TurnLeftAttack {
 		get { return mTurnLeftAttack; }
 		set { mTurnLeftAttack = value; }
@@ -90,6 +114,9 @@ public class TileStatus {
 	}
 	public void AttackTurnReset() {
 		mTurnLeftAttack = mAttackSpeed;
+	}
+	public void IncFallingCount(){
+		mFallingCount ++;
 	}
 	public void SetBubbleCount(){
 		mBubbleCount = 2;
