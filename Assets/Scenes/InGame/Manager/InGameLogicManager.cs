@@ -90,7 +90,20 @@ public class InGameLogicManager : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
+	private void check(){
+		int i,j;
+		for(i=0;i<MAX_ROW_COUNT;i++){
+			for(j=0;j<MAX_COL_COUNT;j++){
+				if(mTiles[i,j].transform.localScale.x.Equals(0.0f)){
+					if(!mTiles[i,j].Status.IsEmpty){
+						Debug.Log ("Is Blowable : " + mTiles[i,j].IsBlowable);
+					}
+				}
+			}
+		}
+	}
 	private void Update () {
+		check();
 		if(mIsSwapEnable && Input.GetButtonDown ("Fire1")) {
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit = new RaycastHit();
@@ -532,12 +545,10 @@ public class InGameLogicManager : MonoBehaviour {
 //				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
 //			}
 //		}	
-
 		for(j=0;j<MAX_COL_COUNT;j++){
 			for(i=MAX_ROW_COUNT-1;i>=0;i--){
 				if(mTiles[i,j].Status.Destroyed){
 					mTiles[i,j].Status.Destroyed = false;
-					mTiles[i,j].Status.IsEmpty = true;
 					mTiles[i,j].IsBlowable = false;
 					StartCoroutine(InGameAnimationManager.Instance.TileDestroy(mTiles[i, j]));
 				}
@@ -612,6 +623,7 @@ public class InGameLogicManager : MonoBehaviour {
 	public void TileDestroyEnd(TileScript tile){
 		int x = tile.Col,y = tile.Row;
 		int i;
+		tile.Status.IsEmpty = true;
 		for(i=y;i>=0;i--){
 			if(!mTiles[i,x].Status.Falling){
 				mTiles[i,x].Status.Falling = true;
@@ -622,14 +634,20 @@ public class InGameLogicManager : MonoBehaviour {
 	}
 	
 	public IEnumerator TileFallingStart(TileScript tile){
+		yield return null;
 		int x = tile.Col,y = tile.Row;
+		if(!tile.Status.Falling){
+			Debug.Log ("FallingStart  "+y+"  ,  "+x);
+		}
 		if(y + 1 < MAX_ROW_COUNT){
-			if(y == 0 && mTiles[y,x].Status.IsEmpty){
-				yield return null;
-				MakingNewTile(mTiles[y,x]);
-			}
-			else if(mTiles[y+1,x].Status.Falling || mTiles[y+1,x].Status.IsEmpty){
+			if(mTiles[y+1,x].Status.Falling || mTiles[y+1,x].Status.IsEmpty){
 				StartCoroutine(InGameAnimationManager.Instance.TileFalling(mTiles[y,x]));
+				if(y == 0){
+					MakingNewTile(x);
+				}
+			}
+			else if(y == 0 && mTiles[y,x].Status.IsEmpty){
+				MakingNewTile(x);
 			}
 			else{
 				mTiles[y,x].Status.Falling = false;
@@ -640,26 +658,29 @@ public class InGameLogicManager : MonoBehaviour {
 			mTiles[y,x].Status.Falling = false;
 			if(!mTiles[y,x].Status.IsEmpty) mTiles[y,x].IsBlowable = true;
 		}
-		yield return null;
 	}
-	public void MakingNewTile(TileScript tile){
-		int x = tile.Col,y = tile.Row;
-		mTiles[y,x].Init(y,x,new TileStatus());
-		mTiles[y,x].IsBlowable = false;
-		mTiles[y,x].Status.Falling = true;
-		mTiles[y,x].Status.FallingCount = mTiles[y+1,x].Status.FallingCount;
-		StartCoroutine(TileFallingStart(mTiles[y,x]));
+	public void MakingNewTile(int x){
+		GameObject tileObject = Resources.Load("InGame/Tile", typeof(GameObject)) as GameObject;
+		GameObject tileObjectClone = (GameObject)Instantiate(tileObject);
+		tileObjectClone.name = "Tile(" + -1 + "," + x + ")";
+		TileScript newTileScript = tileObjectClone.GetComponent<TileScript>();
+		newTileScript.Init(-1, x, new TileStatus());
+		newTileScript.IsBlowable = false;
+		newTileScript.Status.Falling = true;
+		newTileScript.Status.FallingCount = 0;
+		StartCoroutine(InGameAnimationManager.Instance.TileFalling(newTileScript));
 	}
 	public void TileFallingEnd(TileScript tile){
 		int x = tile.Col, y = tile.Row;
-		mTiles[y+1,x].Init(y+1,x,mTiles[y,x].Status);
+		mTiles[y+1,x].Init(y+1,x,tile.Status);
+		if(y == -1){
+			Destroy (tile.gameObject);
+		}
 		if(mTiles[y+1,x].Status.IsEmpty){
 			mTiles[y+1,x].transform.localScale = new Vector3(0.0f,0.0f,0.0f);
 		}
 		mTiles[y+1,x].IsBlowable = false;
 		StartCoroutine(TileFallingStart(mTiles[y+1,x]));
-		if(y == 0){
-			MakingNewTile (mTiles[y,x]);
-		}
+		
 	}
 }	

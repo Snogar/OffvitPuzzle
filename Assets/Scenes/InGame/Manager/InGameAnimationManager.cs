@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 public class InGameAnimationManager : MonoBehaviour {
 	private const float SWAP_ANIMATION_TIME = 0.3f;
-	private const float TILE_FELL_SPEED = 400.0f; //384.0f;
+	private const float TILE_FELL_SPEED = 800.0f; //384.0f;
 	private const float TILE_BOUNCE_SPEED = 64.0f;
 	private const float TILE_DESTROY_DELAY = 0.0f;
 	private const float ENEMY_ATTACK_ACTION_SCALE = 1.5f;
 	private const float ENEMY_ATTACK_ACTION_SCALE_TIME = 0.3f;
 	private const float ENEMY_ATTACK_ACTION_DELAY_TIME = 0.3f;
-	private const float TILE_DESTROY_TIME = 0.3f;
+	private const float TILE_DESTROY_TIME = 0.2f;
 	private static InGameAnimationManager instance;
 	public static InGameAnimationManager Instance {
 		get { return instance; }
@@ -61,8 +61,9 @@ public class InGameAnimationManager : MonoBehaviour {
 		iTweenChainManager.instance.Execute(methodQueue);	 
 	}
 	public IEnumerator TileDestroy(TileScript tile){
-		resetTileAction(tile);
-		yield return new WaitForSeconds(0.05f);
+//		resetTileAction(tile);
+//		yield return new WaitForSeconds(0.05f);
+		yield return null;
 		float x = 0.0f,y = 0.0f;
 		Queue<iTweenChainManager.iTweenChainParameter> methodQueue = new Queue<iTweenChainManager.iTweenChainParameter>();
 		methodQueue.Enqueue(iTweenChainManager.Parameter("ScaleTo", tile.gameObject, new Hashtable() {
@@ -117,7 +118,7 @@ public class InGameAnimationManager : MonoBehaviour {
 				{"isLocal", true},
 				{"x", tile.GetTileVector().x},
 				{"y", nowy},
-				{"speed", (TILE_FELL_SPEED-count*100-step*10)}, 
+				{"speed", (TILE_FELL_SPEED)}, 
 				{"delay", TILE_DESTROY_DELAY}, 
 				{"easetype", "linear"}
 			}));
@@ -127,7 +128,7 @@ public class InGameAnimationManager : MonoBehaviour {
 			{"isLocal", true},
 			{"x", tile.GetTileVector().x},
 			{"y", nowy},
-			{"speed", TILE_FELL_SPEED-100-count*100}, 
+			{"speed", TILE_FELL_SPEED}, 
 			{"delay", TILE_DESTROY_DELAY},
 			{"easetype", "linear"},
 			{"onComplete", "TileFallingEnd_Animation"}, 
