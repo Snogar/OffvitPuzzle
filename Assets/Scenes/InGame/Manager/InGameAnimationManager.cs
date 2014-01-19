@@ -38,7 +38,6 @@ public class InGameAnimationManager : MonoBehaviour {
 	public IEnumerator TileMoveToOriginalPositionStart(TileScript tile) {
 		resetTileAction(tile);
 		yield return new WaitForSeconds(0.05f);
-		
 		Queue<iTweenChainManager.iTweenChainParameter> methodQueue = new Queue<iTweenChainManager.iTweenChainParameter>();
 		methodQueue.Enqueue(iTweenChainManager.Parameter("MoveTo", tile.gameObject, new Hashtable() {
 			{"isLocal", true},
@@ -77,12 +76,10 @@ public class InGameAnimationManager : MonoBehaviour {
 			{"onCompleteParams", tile}
 		}));
 		iTweenChainManager.instance.Execute(methodQueue);
-
 	}
 	public IEnumerator EnemyAttackActionStart(TileScript tile) {
 		resetTileAction(tile);
 		yield return new WaitForSeconds(0.05f);
-		
 		Vector3 origScale = TileTypeManager.Instance.GetTileScale(tile.Status.Type);
 		Queue<iTweenChainManager.iTweenChainParameter> methodQueue = new Queue<iTweenChainManager.iTweenChainParameter>();
 		methodQueue.Enqueue(iTweenChainManager.Parameter("ScaleBy", tile.gameObject, new Hashtable() {

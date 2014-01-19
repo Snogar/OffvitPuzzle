@@ -628,13 +628,11 @@ public class InGameLogicManager : MonoBehaviour {
 			if(!mTiles[i,x].Status.Falling){
 				mTiles[i,x].Status.Falling = true;
 				mTiles[i,x].IsBlowable = false;
-				StartCoroutine(TileFallingStart(mTiles[i,x]));
+				TileFallingStart(mTiles[i,x]);
 			}
 		}
 	}
-	
-	public IEnumerator TileFallingStart(TileScript tile){
-		yield return null;
+	public void TileFallingStart(TileScript tile){
 		int x = tile.Col,y = tile.Row;
 		if(!tile.Status.Falling){
 			Debug.Log ("FallingStart  "+y+"  ,  "+x);
@@ -650,13 +648,17 @@ public class InGameLogicManager : MonoBehaviour {
 				MakingNewTile(x);
 			}
 			else{
-				mTiles[y,x].Status.Falling = false;
-				if(!mTiles[y,x].Status.IsEmpty) mTiles[y,x].IsBlowable = true;
+				if(!mTiles[y,x].Status.IsEmpty){
+					mTiles[y,x].IsBlowable = true;
+					mTiles[y,x].Status.Falling = false;
+				}
 			}
 		}
 		else{
-			mTiles[y,x].Status.Falling = false;
-			if(!mTiles[y,x].Status.IsEmpty) mTiles[y,x].IsBlowable = true;
+			if(!mTiles[y,x].Status.IsEmpty){
+				mTiles[y,x].IsBlowable = true;
+				mTiles[y,x].Status.Falling = false;
+			}
 		}
 	}
 	public void MakingNewTile(int x){
@@ -680,7 +682,6 @@ public class InGameLogicManager : MonoBehaviour {
 			mTiles[y+1,x].transform.localScale = new Vector3(0.0f,0.0f,0.0f);
 		}
 		mTiles[y+1,x].IsBlowable = false;
-		StartCoroutine(TileFallingStart(mTiles[y+1,x]));
-		
+		TileFallingStart(mTiles[y+1,x]);
 	}
 }	
