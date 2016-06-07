@@ -142,7 +142,7 @@ public class DragDropItem : MonoBehaviour
 			}
 
 			mIsDragging = false;
-			Collider col = collider;
+			Collider col = GetComponent<Collider>();
 			if (col != null) col.enabled = !isPressed;
 			if (!isPressed) Drop();
 		}

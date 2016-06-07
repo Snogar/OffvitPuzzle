@@ -392,7 +392,7 @@ public class UIWidget : MonoBehaviour
 	{
 		get
 		{
-			BoxCollider box = collider as BoxCollider;
+			BoxCollider box = GetComponent<Collider>() as BoxCollider;
 			return (box != null);
 		}
 	}
@@ -405,7 +405,7 @@ public class UIWidget : MonoBehaviour
 	{
 		if (NGUITools.IsActive(this))
 		{
-			BoxCollider box = collider as BoxCollider;
+			BoxCollider box = GetComponent<Collider>() as BoxCollider;
 			if (box != null) NGUITools.UpdateWidgetCollider(box, true);
 		}
 	}

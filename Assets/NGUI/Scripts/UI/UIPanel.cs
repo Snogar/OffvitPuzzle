@@ -909,7 +909,7 @@ public class UIPanel : MonoBehaviour
 
 	void OnDrawGizmos ()
 	{
-		if (mCam == null || !mCam.isOrthoGraphic) return;
+		if (mCam == null || !mCam.orthographic) return;
 
 		bool clip = (mClipping != UIDrawCall.Clipping.None);
 		Vector2 size = clip ? new Vector2(mClipRange.z, mClipRange.w) : Vector2.zero;

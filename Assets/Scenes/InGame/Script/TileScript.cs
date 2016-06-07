@@ -86,6 +86,7 @@ public class TileScript : MonoBehaviour {
 			mSprite.depth = 0;
 			//gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, 0);
 		}
+		
 		gameObject.transform.localScale = TileTypeManager.Instance.GetTileScale(status.Type);
 	}
 	

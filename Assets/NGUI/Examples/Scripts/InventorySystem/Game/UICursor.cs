@@ -64,7 +64,7 @@ public class UICursor : MonoBehaviour
 				mTrans.position = uiCamera.ViewportToWorldPoint(pos);
 
 				// For pixel-perfect results
-				if (uiCamera.isOrthoGraphic)
+				if (uiCamera.orthographic)
 				{
 					Vector3 size = new Vector3(mSprite.width, mSprite.height, 1f);
 					mTrans.localPosition = NGUIMath.ApplyHalfPixelOffset(mTrans.localPosition, size);

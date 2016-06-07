@@ -1,14 +1,12 @@
 using UnityEngine;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
 public class InGameLogicManager : MonoBehaviour {
-	public const int MAX_ROW_COUNT = 8;
-	public const int MAX_COL_COUNT = 8;
+	private const int MAX_ROW_COUNT = 8;
+	private const int MAX_COL_COUNT = 8;
 	private const int BLOW_MINIMUM_COUNT = 3;
 	private const int MP_INCREASING_CONSTANT = 3;
-	private const int MAX_MP = 400;
 	
 	private TileScript[,] mTiles = new TileScript[MAX_ROW_COUNT, MAX_COL_COUNT];
 	private bool mIsSwapEnable, mIsBlownThisTurn, mIsReSwapNeeded, mIsEnemyActionDone;
@@ -19,28 +17,8 @@ public class InGameLogicManager : MonoBehaviour {
 	private int mBaseMP;
 	
 	private bool[,] mCheckToDestroyed;
-	public TileScript[,] Tiles{
-		get { return mTiles; }
-	}
-	private static int[,] LOC_ALL = new int[225,2] {
-		{-7, -7}, {-7, -6}, {-7, -5}, {-7, -4}, {-7, -3}, {-7, -2}, {-7, -1}, {-7, 0}, {-7, 1}, {-7, 2}, {-7, 3}, {-7, 4}, {-7, 5}, {-7, 6}, {-7, 7},
-		{-6, -7}, {-6, -6}, {-6, -5}, {-6, -4}, {-6, -3}, {-6, -2}, {-6, -1}, {-6, 0}, {-6, 1}, {-6, 2}, {-6, 3}, {-6, 4}, {-6, 5}, {-6, 6}, {-6, 7},
-		{-5, -7}, {-5, -6}, {-5, -5}, {-5, -4}, {-5, -3}, {-5, -2}, {-5, -1}, {-5, 0}, {-5, 1}, {-5, 2}, {-5, 3}, {-5, 4}, {-5, 5}, {-5, 6}, {-5, 7},
-		{-4, -7}, {-4, -6}, {-4, -5}, {-4, -4}, {-4, -3}, {-4, -2}, {-4, -1}, {-4, 0}, {-4, 1}, {-4, 2}, {-4, 3}, {-4, 4}, {-4, 5}, {-4, 6}, {-4, 7},
-		{-3, -7}, {-3, -6}, {-3, -5}, {-3, -4}, {-3, -3}, {-3, -2}, {-3, -1}, {-3, 0}, {-3, 1}, {-3, 2}, {-3, 3}, {-3, 4}, {-3, 5}, {-3, 6}, {-3, 7},
-		{-2, -7}, {-2, -6}, {-2, -5}, {-2, -4}, {-2, -3}, {-2, -2}, {-2, -1}, {-2, 0}, {-2, 1}, {-2, 2}, {-2, 3}, {-2, 4}, {-2, 5}, {-2, 6}, {-2, 7},
-		{-1, -7}, {-1, -6}, {-1, -5}, {-1, -4}, {-1, -3}, {-1, -2}, {-1, -1}, {-1, 0}, {-1, 1}, {-1, 2}, {-1, 3}, {-1, 4}, {-1, 5}, {-1, 6}, {-1, 7},
-		{ 0, -7}, { 0, -6}, { 0, -5}, { 0, -4}, { 0, -3}, { 0, -2}, { 0, -1}, { 0, 0}, { 0, 1}, { 0, 2}, { 0, 3}, { 0, 4}, { 0, 5}, { 0, 6}, { 0, 7},
-		{ 1, -7}, { 1, -6}, { 1, -5}, { 1, -4}, { 1, -3}, { 1, -2}, { 1, -1}, { 1, 0}, { 1, 1}, { 1, 2}, { 1, 3}, { 1, 4}, { 1, 5}, { 1, 6}, { 1, 7},
-		{ 2, -7}, { 2, -6}, { 2, -5}, { 2, -4}, { 2, -3}, { 2, -2}, { 2, -1}, { 2, 0}, { 2, 1}, { 2, 2}, { 2, 3}, { 2, 4}, { 2, 5}, { 2, 6}, { 2, 7},
-		{ 3, -7}, { 3, -6}, { 3, -5}, { 3, -4}, { 3, -3}, { 3, -2}, { 3, -1}, { 3, 0}, { 3, 1}, { 3, 2}, { 3, 3}, { 3, 4}, { 3, 5}, { 3, 6}, { 3, 7},
-		{ 4, -7}, { 4, -6}, { 4, -5}, { 4, -4}, { 4, -3}, { 4, -2}, { 4, -1}, { 4, 0}, { 4, 1}, { 4, 2}, { 4, 3}, { 4, 4}, { 4, 5}, { 4, 6}, { 4, 7},
-		{ 5, -7}, { 5, -6}, { 5, -5}, { 5, -4}, { 5, -3}, { 5, -2}, { 5, -1}, { 5, 0}, { 5, 1}, { 5, 2}, { 5, 3}, { 5, 4}, { 5, 5}, { 5, 6}, { 5, 7},
-		{ 6, -7}, { 6, -6}, { 6, -5}, { 6, -4}, { 6, -3}, { 6, -2}, { 6, -1}, { 6, 0}, { 6, 1}, { 6, 2}, { 6, 3}, { 6, 4}, { 6, 5}, { 6, 6}, { 6, 7},
-		{ 7, -7}, { 7, -6}, { 7, -5}, { 7, -4}, { 7, -3}, { 7, -2}, { 7, -1}, { 7, 0}, { 7, 1}, { 7, 2}, { 7, 3}, { 7, 4}, { 7, 5}, { 7, 6}, { 7, 7}
-	};
-	private static int[,] LOC_MANHATTAN_DISTANCE_2 = new int[13,2] {{-2, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2}, {1, -1}, {1, 0}, {1, 1}, {2, 0}};
-
+	private bool[,] mTilesDestroyed;
+	
 	private static InGameLogicManager instance;
 	public static InGameLogicManager Instance {
 		get { return instance; }
@@ -60,6 +38,7 @@ public class InGameLogicManager : MonoBehaviour {
 				tileObjectClone.name = "Tile(" + i + "," + j + ")";
 				TileScript tileScript = tileObjectClone.GetComponent<TileScript>();
 				tileScript.Init(i, j, new TileStatus());
+				
 				mTiles[i, j] = tileScript;
 			}
 		}
@@ -90,20 +69,7 @@ public class InGameLogicManager : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	private void check(){
-		int i,j;
-		for(i=0;i<MAX_ROW_COUNT;i++){
-			for(j=0;j<MAX_COL_COUNT;j++){
-				if(mTiles[i,j].transform.localScale.x.Equals(0.0f)){
-					if(!mTiles[i,j].Status.IsEmpty){
-						Debug.Log ("Is Blowable : " + mTiles[i,j].IsBlowable);
-					}
-				}
-			}
-		}
-	}
 	private void Update () {
-		check();
 		if(mIsSwapEnable && Input.GetButtonDown ("Fire1")) {
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit = new RaycastHit();
@@ -365,7 +331,7 @@ public class InGameLogicManager : MonoBehaviour {
 		int start,end;
 		while(q.Count != 0){
 			now = q.Dequeue();
-			mTiles[now[0],now[1]].Status.Destroyed = true;
+			mTilesDestroyed[now[0],now[1]] = true;
 			if(mTiles[now[0],now[1]].Status.MoveTime > maxMovingTime){
 				if(mTiles[now[0],now[1]].Status.CountToDestroy == 1){
 					maxMovingTime = mTiles[now[0],now[1]].Status.MoveTime;
@@ -389,43 +355,15 @@ public class InGameLogicManager : MonoBehaviour {
 		if(blownUpStatus[now_row, now_col].mShape != shape) return false;
 		return true;
 	}
-	private int CalculateMP(int baseMP, int blownTileCount){
-		int newMP = baseMP + MP_INCREASING_CONSTANT * mBlownTileCount;
-		if(newMP >= MAX_MP) return MAX_MP;
-		return newMP;
-	}
-
-	private int MAP<T>(T[,] array, int row, int col, int[,] locations, Predicate<T> filter, Action<T> action){
-		int rowLength = array.GetLength(0);
-		int colLength = array.GetLength(1);
-		int count = 0;
-		for(int i=0;i<locations.GetLength(0);i++){
-			int curRow = row + locations[i, 0];
-			int curCol = col + locations[i, 1];
-			if(!(curRow >= 0 && curRow < rowLength
-			     && curCol >= 0 && curCol < colLength
-			     && filter(array[curRow, curCol]))) continue;
-			count++;
-			action(array[curRow, curCol]);
-		}
-		return count;
-	}
-	private void DamageTile(TileScript tile, int damage) {
-		if(!tile.IsBlowable || tile.Status.Destroyed) return;
-		tile.Status.CountToDestroy-= damage;
-		if(tile.Status.CountToDestroy <= 0) {
-			//Tile Destroyed :: give exp, money and special effects
-			mBlownTileCount++;
-			tile.Status.Destroyed = true;
-		}
-	}
+	
 	private bool BlowUpTiles() {
 		int i, j;
 		BlownUpStatus[,] blownUpStatus = new BlownUpStatus[MAX_ROW_COUNT, MAX_COL_COUNT];
 		BlownUpStatus.Construct(blownUpStatus);
 		
-		if(!CheckBlowUpTiles(blownUpStatus)) return false;
 		mCheckToDestroyed = new bool[MAX_ROW_COUNT,MAX_COL_COUNT];
+		mTilesDestroyed = new bool[MAX_ROW_COUNT, MAX_COL_COUNT];
+		if(!CheckBlowUpTiles(blownUpStatus)) return false;
 		// delete
 		for(i=0;i<MAX_ROW_COUNT;i++) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
@@ -434,17 +372,20 @@ public class InGameLogicManager : MonoBehaviour {
 					mCheckToDestroyed[i,j] = true;
 					
 					if(blownUpStatus[i,j].mShape == BlownUpStatus.EffectShape.NONE){
-						DamageTile(mTiles[i,j], 1);
+						mTiles[i,j].Status.CountToDestroy--;
+						if(mTiles[i,j].Status.CountToDestroy <= 0) {
+							//Tile Destroyed :: give exp, money and special effects
+							mTilesDestroyed[i,j] = true;
+						}
 					}
 					else{
 						int[] notDestroyedTilePath = SearchSameShape(blownUpStatus,i,j);
 						if(notDestroyedTilePath[0] != -1 && notDestroyedTilePath[1] != -1){
-							DamageTile(mTiles[i,j], 1);
-							//Revive Special Tile
-							mTiles[notDestroyedTilePath[0], notDestroyedTilePath[1]].Status.Destroyed = false;
 							TileStatus nowStatus = mTiles[notDestroyedTilePath[0],notDestroyedTilePath[1]].Status;
 							TileTypeManager.TileType madeSpecialType = TileTypeManager.TileType.NORMAL;
-														
+							mTilesDestroyed[notDestroyedTilePath[0], notDestroyedTilePath[1]] = false;
+							mBlownTileCount++;
+							
 							if(blownUpStatus[i,j].mShape == BlownUpStatus.EffectShape.FOUR){
 								madeSpecialType = TileTypeManager.TileType.HEAL;
 							}
@@ -468,93 +409,70 @@ public class InGameLogicManager : MonoBehaviour {
 			isStop = true;
 			for(i=0;i<MAX_ROW_COUNT;i++){
 				for(j=0;j<MAX_COL_COUNT;j++){
-					if(!isAlreadyBomb[i,j] && mTiles[i,j].Status.Destroyed){
+					if(!isAlreadyBomb[i,j] && mTilesDestroyed[i,j]){
 						isAlreadyBomb[i,j] = true;
-						if(mTiles[i,j].Status.Type == TileTypeManager.TileType.HEAL){
+						if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.HEAL){
 							// Add Heal.
 							UserManager.Instance.decreaseHP(-3);
 							InGameUIManager.Instance.UpdateHP(UserManager.Instance.HP);
 						}
-						else if(mTiles[i,j].Status.Type == TileTypeManager.TileType.CROSS){
+						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.CROSS){
 							int k;
 							for(k=0;k<MAX_COL_COUNT;k++){
-								DamageTile(mTiles[i,k], 1);
+								if(mTiles[i,k].IsBlowable) mTilesDestroyed[i,k] = true;
+							}
+							for(k=0;k<MAX_ROW_COUNT;k++){
+								if(mTiles[k,j].IsBlowable) mTilesDestroyed[k,j] = true;
 							}
 						}
-						else if(mTiles[i,j].Status.Type == TileTypeManager.TileType.SPECIAL){
+						else if(mTiles[i,j].mStatus.Type == TileTypeManager.TileType.SPECIAL){
 							// Special Effect.
-							// Bubble Effect
-							switch(mTiles[i,j].Status.Color){
-								case TileTypeManager.TileColor.BLUE:
-									MAP<TileScript>(mTiles, i, j, LOC_ALL, 
-								    	            delegate(TileScript tile) { return TileTypeManager.Instance.IsEnemyType(tile.Status.Type); },
-													delegate(TileScript tile) { tile.Status.SetBubbleCount(); });
-									break;
-								case TileTypeManager.TileColor.WHITE:
-									MAP<TileScript>(mTiles, i, j, LOC_ALL,
-									                delegate(TileScript tile) { return tile.Status.Color == TileTypeManager.TileColor.WHITE; },
-													delegate(TileScript tile) { DamageTile(tile, 1); });
-									break;
-								case TileTypeManager.TileColor.PINK:
-									MAP<TileScript>(mTiles, i, j, LOC_MANHATTAN_DISTANCE_2,
-								                	delegate(TileScript tile) { return true; },
-													delegate(TileScript tile) { DamageTile(tile, 1); });
-									break;
-							}
 						}
 						isStop = false;
 					}
 				}
 			}
 		}
-
+		
 		//Real delete
-//		int row;
-//		for(j=0;j<MAX_COL_COUNT;j++) {
-//			Queue<int> q = new Queue<int>();
-//			for(i=MAX_ROW_COUNT-1;i>=0;i--) {
-//				if(mTiles[i, j].Status.Destroyed) {
-//					//mTiles[i, j].Status.Destroyed = true;
-//					q.Enqueue(i);
-//				}else {
-//					if(q.Count > 0) {
-//						row = q.Dequeue();
-//						mTiles[row, j].IsBlowable = false;
-//						mTiles[row, j].SetPosition(mTiles[i,j].gameObject.transform.localPosition);
-//						mTiles[row, j].SetTile(mTiles[i,j].Status);
-//						StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
-//						q.Enqueue(i);
-//					}
-//				}
-//			}
-//
-//			while(q.Count > 0) {
-//				row = q.Dequeue();
-//				mTiles[row, j].IsBlowable = false;
-//				Vector3 topTilePosition = TileScript.GetTileVectorWithRowCol(0, j);
-//				if(q.Count + 1 < MAX_ROW_COUNT) {
-//					Vector3 lastFellingTilePosition = mTiles[q.Count+1,j].gameObject.transform.localPosition;
-//					if(lastFellingTilePosition.y <= topTilePosition.y) 
-//						mTiles[row, j].SetPosition(new Vector3(topTilePosition.x, topTilePosition.y+TileScript.tileSize, 0));
-//					else 
-//						mTiles[row, j].SetPosition(new Vector3(lastFellingTilePosition.x, lastFellingTilePosition.y+TileScript.tileSize, 0));
-//				}else {
-//					mTiles[row, j].SetPosition(new Vector3(topTilePosition.x, topTilePosition.y+TileScript.tileSize, 0));
-//				}
-//				mTiles[row, j].SetTile(new TileStatus());
-//				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
-//			}
-//		}	
-		for(j=0;j<MAX_COL_COUNT;j++){
-			for(i=MAX_ROW_COUNT-1;i>=0;i--){
-				if(mTiles[i,j].Status.Destroyed){
-					mTiles[i,j].Status.Destroyed = false;
-					mTiles[i,j].IsBlowable = false;
-					StartCoroutine(InGameAnimationManager.Instance.TileDestroy(mTiles[i, j]));
+		int row;
+		for(j=0;j<MAX_COL_COUNT;j++) {
+			Queue<int> q = new Queue<int>();
+			for(i=MAX_ROW_COUNT-1;i>=0;i--) {
+				if(mTilesDestroyed[i, j]) {
+					q.Enqueue(i);
+					mBlownTileCount++;
+				}else {
+					if(q.Count > 0) {
+						row = q.Dequeue();
+						mTiles[row, j].IsBlowable = false;
+						mTiles[row, j].SetPosition(mTiles[i,j].gameObject.transform.localPosition);
+						mTiles[row, j].SetTile(mTiles[i,j].Status);
+						StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
+						q.Enqueue(i);
+					}
 				}
 			}
+			
+			while(q.Count > 0) {
+				row = q.Dequeue();
+				mTiles[row, j].IsBlowable = false;
+				
+				Vector3 topTilePosition = TileScript.GetTileVectorWithRowCol(0, j);
+				if(q.Count + 1 < MAX_ROW_COUNT) {
+					Vector3 lastFellingTilePosition = mTiles[q.Count+1,j].gameObject.transform.localPosition;
+					if(lastFellingTilePosition.y <= topTilePosition.y) 
+						mTiles[row, j].SetPosition(new Vector3(topTilePosition.x, topTilePosition.y+TileScript.tileSize, 0));
+					else 
+						mTiles[row, j].SetPosition(new Vector3(lastFellingTilePosition.x, lastFellingTilePosition.y+TileScript.tileSize, 0));
+				}else {
+					mTiles[row, j].SetPosition(new Vector3(topTilePosition.x, topTilePosition.y+TileScript.tileSize, 0));
+				}
+				mTiles[row, j].SetTile(new TileStatus());
+				StartCoroutine(InGameAnimationManager.Instance.TileMoveToOriginalPositionStart(mTiles[row, j]));
+			}
 		}
-		UserManager.Instance.setMP(CalculateMP(mBaseMP, mBlownTileCount));
+		UserManager.Instance.setMP(mBaseMP + MP_INCREASING_CONSTANT * mBlownTileCount);
 		InGameUIManager.Instance.UpdateMP(UserManager.Instance.MP);
 		return true;
 	}
@@ -564,11 +482,10 @@ public class InGameLogicManager : MonoBehaviour {
 		
 		mIsEnemyActionDone = true;
 		if(!mIsBlownThisTurn) return;
-
+		
 		for(i=MAX_ROW_COUNT-1;i>=0;i--) {
 			for(j=0;j<MAX_COL_COUNT;j++) {
 				if(!TileTypeManager.Instance.IsEnemyType(mTiles[i,j].Status.Type)) continue;
-				if(mTiles[i,j].Status.DecBubbleCount()) continue;
 				if(mTiles[i, j].Status.Type == TileTypeManager.TileType.ENEMY_ARCHER) {
 					if(i >= TileTypeManager.ARCHER_ATTACK_ROW - 1) EnemyAttack(i,j);
 					else EnemyMove(i,j);
@@ -603,6 +520,7 @@ public class InGameLogicManager : MonoBehaviour {
 	}
 	
 	private void EnemyAttack(int row, int col) {
+		//TODO : enemy wizard attacks skill gauge
 		mTiles[row,col].Status.TurnLeftAttack--;
 		if(mTiles[row,col].Status.TurnLeftAttack <= 0) {
 			mTiles[row,col].Status.AttackTurnReset();
@@ -619,69 +537,6 @@ public class InGameLogicManager : MonoBehaviour {
 		mTurn ++;
 		InGameUIManager.Instance.UpdateTurn(mTurn);
 	}
+}
 
-	public void TileDestroyEnd(TileScript tile){
-		int x = tile.Col,y = tile.Row;
-		int i;
-		tile.Status.IsEmpty = true;
-		for(i=y;i>=0;i--){
-			if(!mTiles[i,x].Status.Falling){
-				mTiles[i,x].Status.Falling = true;
-				mTiles[i,x].IsBlowable = false;
-				TileFallingStart(mTiles[i,x]);
-			}
-		}
-	}
-	public void TileFallingStart(TileScript tile){
-		int x = tile.Col,y = tile.Row;
-		if(!tile.Status.Falling){
-			Debug.Log ("FallingStart  "+y+"  ,  "+x);
-		}
-		if(y + 1 < MAX_ROW_COUNT){
-			if(mTiles[y+1,x].Status.Falling || mTiles[y+1,x].Status.IsEmpty){
-				StartCoroutine(InGameAnimationManager.Instance.TileFalling(mTiles[y,x]));
-				if(y == 0){
-					MakingNewTile(x);
-				}
-			}
-			else if(y == 0 && mTiles[y,x].Status.IsEmpty){
-				MakingNewTile(x);
-			}
-			else{
-				if(!mTiles[y,x].Status.IsEmpty){
-					mTiles[y,x].IsBlowable = true;
-					mTiles[y,x].Status.Falling = false;
-				}
-			}
-		}
-		else{
-			if(!mTiles[y,x].Status.IsEmpty){
-				mTiles[y,x].IsBlowable = true;
-				mTiles[y,x].Status.Falling = false;
-			}
-		}
-	}
-	public void MakingNewTile(int x){
-		GameObject tileObject = Resources.Load("InGame/Tile", typeof(GameObject)) as GameObject;
-		GameObject tileObjectClone = (GameObject)Instantiate(tileObject);
-		tileObjectClone.name = "Tile(" + -1 + "," + x + ")";
-		TileScript newTileScript = tileObjectClone.GetComponent<TileScript>();
-		newTileScript.Init(-1, x, new TileStatus());
-		newTileScript.IsBlowable = false;
-		newTileScript.Status.Falling = true;
-		newTileScript.Status.FallingCount = 0;
-		StartCoroutine(InGameAnimationManager.Instance.TileFalling(newTileScript));
-	}
-	public void TileFallingEnd(TileScript tile){
-		int x = tile.Col, y = tile.Row;
-		mTiles[y+1,x].Init(y+1,x,tile.Status);
-		if(y == -1){
-			Destroy (tile.gameObject);
-		}
-		if(mTiles[y+1,x].Status.IsEmpty){
-			mTiles[y+1,x].transform.localScale = new Vector3(0.0f,0.0f,0.0f);
-		}
-		mTiles[y+1,x].IsBlowable = false;
-		TileFallingStart(mTiles[y+1,x]);
-	}
-}	
+		
